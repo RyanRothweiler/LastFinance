@@ -13,7 +13,6 @@ struct State {
     db: Mutex<Database>,
 }
 
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
 fn create_category(name: &str, ts: tauri::State<State>) -> String {
     let conn = ts.db.lock().unwrap();
@@ -27,6 +26,13 @@ fn create_category(name: &str, ts: tauri::State<State>) -> String {
     return cat.to_json_string();
 }
 
+#[tauri::command]
+fn get_all_categories(ts: tauri::State<State>) -> String {
+    let mut list: database::CategoryList = database::CategoryList { categories: vec![] };
+    list.categories = ts.db.lock().unwrap().get_all_categories();
+    return list.to_json_string();
+}
+
 fn main() {
     let state = State {
         db: Mutex::new(Database::new("db.db3")),
@@ -34,7 +40,10 @@ fn main() {
 
     tauri::Builder::default()
         .manage(state)
-        .invoke_handler(tauri::generate_handler![create_category])
+        .invoke_handler(tauri::generate_handler![
+            create_category,
+            get_all_categories
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

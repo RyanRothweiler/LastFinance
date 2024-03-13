@@ -4,8 +4,8 @@ use leptos::leptos_dom::ev::SubmitEvent;
 use leptos::*;
 
 use serde::{Deserialize, Serialize};
-use serde_wasm_bindgen::to_value;
 use serde_json;
+use serde_wasm_bindgen::to_value;
 
 use wasm_bindgen::prelude::*;
 
@@ -33,7 +33,17 @@ pub fn App() -> impl IntoView {
     let (category_get, category_set) = create_signal::<Vec<String>>(vec![]);
     //let category_entries =
 
-    //let category_init = create_resource(category_get, |value| async move {});
+    let category_init = create_resource(
+        || (),
+        move |_| async move {
+            let json = invoke("get_all_categories", JsValue::NULL)
+                .await
+                .as_string()
+                .unwrap();
+            //set_greet_msg.set(json);
+
+        },
+    );
 
     let update_name = move |ev| {
         let v = event_target_value(&ev);

@@ -2,6 +2,7 @@ use rusqlite::{params, Connection, Result};
 
 mod category;
 pub use category::Category;
+pub use category::CategoryList;
 
 pub struct Database {
     connection: Connection,
@@ -73,7 +74,7 @@ impl Database {
         return None;
     }
 
-    pub fn get_categories(&self) -> Vec<Category> {
+    pub fn get_all_categories(&self) -> Vec<Category> {
         let query = format!("SELECT display_name FROM {}", category::TABLE_ID);
         println!("{query}");
 

@@ -17,3 +17,14 @@ impl Category {
         return serde_json::to_string(self).unwrap();
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct CategoryList {
+    pub categories: Vec<Category>
+}
+
+impl CategoryList {
+    pub fn to_json_string(&self) -> String {
+        return serde_json::to_string(self).unwrap();
+    } 
+}
