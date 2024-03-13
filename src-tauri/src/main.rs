@@ -13,20 +13,18 @@ struct State {
     db: Mutex<Database>,
 }
 
-#[derive(Debug)]
-struct Person {
-    id: i32,
-    name: String,
-    data: Option<Vec<u8>>,
-}
-
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
-fn greet(name: &str, ts: tauri::State<State>) -> String {
+fn create_category(name: &str, ts: tauri::State<State>) -> String {
     let conn = ts.db.lock().unwrap();
     conn.insert_category(name);
+    println!("Inserted new category {}", name);
 
-    return format!("Hello, {}! You've been greeted from Rust!", name);
+    let cat = database::Category {
+        display_name: "wtf".to_string(),
+    };
+
+    return cat.to_json_string();
 }
 
 fn main() {
@@ -36,7 +34,7 @@ fn main() {
 
     tauri::Builder::default()
         .manage(state)
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![create_category])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

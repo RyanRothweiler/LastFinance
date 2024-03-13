@@ -1,7 +1,7 @@
 use rusqlite::{params, Connection, Result};
 
 mod category;
-use category::Category;
+pub use category::Category;
 
 pub struct Database {
     connection: Connection,

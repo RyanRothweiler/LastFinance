@@ -1,10 +1,18 @@
+#![allow(unused_variables)]
+
 use leptos::leptos_dom::ev::SubmitEvent;
 use leptos::*;
 
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::to_value;
+use serde_json;
 
 use wasm_bindgen::prelude::*;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Category {
+    pub display_name: String,
+}
 
 #[wasm_bindgen]
 extern "C" {
@@ -22,6 +30,11 @@ pub fn App() -> impl IntoView {
     let (name, set_name) = create_signal(String::new());
     let (greet_msg, set_greet_msg) = create_signal(String::new());
 
+    let (category_get, category_set) = create_signal::<Vec<String>>(vec![]);
+    //let category_entries =
+
+    //let category_init = create_resource(category_get, |value| async move {});
+
     let update_name = move |ev| {
         let v = event_target_value(&ev);
         set_name.set(v);
@@ -36,9 +49,10 @@ pub fn App() -> impl IntoView {
             }
 
             let args = to_value(&GreetArgs { name: &name }).unwrap();
-            // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-            let new_msg = invoke("greet", args).await.as_string().unwrap();
-            set_greet_msg.set(new_msg);
+            let str = invoke("create_category", args).await.as_string().unwrap();
+            let cat: Category = serde_json::from_str(&str).unwrap();
+
+            set_greet_msg.set(cat.display_name);
         });
     };
 
