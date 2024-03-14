@@ -9,6 +9,9 @@ use rusqlite::{params, Connection, Result};
 mod database;
 use database::Database;
 
+use data::category::Category;
+use data::category::CategoryList;
+
 struct State {
     db: Mutex<Database>,
 }
@@ -19,7 +22,7 @@ fn create_category(name: &str, ts: tauri::State<State>) -> String {
     conn.insert_category(name);
     println!("Inserted new category {}", name);
 
-    let cat = database::Category {
+    let cat = Category {
         display_name: "wtf".to_string(),
     };
 
@@ -28,7 +31,7 @@ fn create_category(name: &str, ts: tauri::State<State>) -> String {
 
 #[tauri::command]
 fn get_all_categories(ts: tauri::State<State>) -> String {
-    let mut list: database::CategoryList = database::CategoryList { categories: vec![] };
+    let mut list: CategoryList = CategoryList { categories: vec![] };
     list.categories = ts.db.lock().unwrap().get_all_categories();
     return list.to_json_string();
 }

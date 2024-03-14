@@ -1,8 +1,8 @@
 [package]
-name = "last_finance"
+name = "src-tauri"
 version = "0.0.0"
 description = "A Tauri App"
-authors = ["you"]
+authors = ["Ryan Rothweiler"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -15,6 +15,8 @@ tauri = { version = "1", features = ["shell-open"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 rusqlite = { version = "0.31.0", features = ["bundled"] }
+
+data = { path = "../data" }
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!

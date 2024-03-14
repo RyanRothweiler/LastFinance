@@ -1,3 +1,5 @@
+#![allow(dead_code, unused_imports)]
+
 use serde::Serialize;
 use serde_json::{Result, Value};
 
@@ -20,11 +22,11 @@ impl Category {
 
 #[derive(Debug, Serialize)]
 pub struct CategoryList {
-    pub categories: Vec<Category>
+    pub categories: Vec<Category>,
 }
 
 impl CategoryList {
     pub fn to_json_string(&self) -> String {
         return serde_json::to_string(self).unwrap();
-    } 
+    }
 }
