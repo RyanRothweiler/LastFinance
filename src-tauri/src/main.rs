@@ -2,15 +2,16 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod database;
+
 use std::sync::Mutex;
 
 use rusqlite::{params, Connection, Result};
 
-mod database;
-use database::Database;
-
 use data::category::Category;
 use data::category::CategoryList;
+
+use database::Database;
 
 struct State {
     db: Mutex<Database>,

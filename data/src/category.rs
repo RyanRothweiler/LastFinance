@@ -1,9 +1,9 @@
 #![allow(dead_code, unused_imports)]
 
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 use serde_json::{Result, Value};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Category {
     pub display_name: String,
 }

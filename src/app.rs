@@ -1,4 +1,4 @@
-#![allow(unused_variables)]
+#![allow(unused_variables, unused_imports)]
 
 use leptos::leptos_dom::ev::SubmitEvent;
 use leptos::*;
@@ -9,10 +9,8 @@ use serde_wasm_bindgen::to_value;
 
 use wasm_bindgen::prelude::*;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Category {
-    pub display_name: String,
-}
+use data::category::Category;
+use data::category::CategoryList;
 
 #[wasm_bindgen]
 extern "C" {
@@ -41,7 +39,6 @@ pub fn App() -> impl IntoView {
                 .as_string()
                 .unwrap();
             //set_greet_msg.set(json);
-
         },
     );
 
