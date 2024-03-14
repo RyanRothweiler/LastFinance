@@ -18,27 +18,26 @@ extern "C" {
     async fn invoke(cmd: &str, args: JsValue) -> JsValue;
 }
 
-#[derive(Serialize, Deserialize)]
-struct GreetArgs<'a> {
-    name: &'a str,
+async fn get_category_list() -> CategoryList {
+    let json = invoke("get_all_categories", JsValue::NULL)
+        .await
+        .as_string()
+        .unwrap();
+    let list: CategoryList = serde_json::from_str(&json).unwrap();
+    return list;
 }
 
 #[component]
 pub fn App() -> impl IntoView {
     let (name, set_name) = create_signal(String::new());
     let (greet_msg, set_greet_msg) = create_signal(String::new());
-
-    let (category_get, category_set) = create_signal::<Vec<String>>(vec![]);
-    //let category_entries =
+    let categories = create_signal::<CategoryList>(CategoryList::new());
 
     let category_init = create_resource(
         || (),
         move |_| async move {
-            let json = invoke("get_all_categories", JsValue::NULL)
-                .await
-                .as_string()
-                .unwrap();
-            //set_greet_msg.set(json);
+            let cat_list = get_category_list().await;
+            categories.1.set(cat_list);
         },
     );
 
@@ -55,36 +54,21 @@ pub fn App() -> impl IntoView {
                 return;
             }
 
-            let args = to_value(&GreetArgs { name: &name }).unwrap();
-            let str = invoke("create_category", args).await.as_string().unwrap();
-            let cat: Category = serde_json::from_str(&str).unwrap();
+            #[derive(Serialize, Deserialize)]
+            struct Args<'a> {
+                name: &'a str,
+            }
 
-            set_greet_msg.set(cat.display_name);
+            let args = to_value(&Args { name: &name }).unwrap();
+            invoke("create_category", args).await;
+
+            let cat_list = get_category_list().await;
+            categories.1.set(cat_list);
         });
     };
 
     view! {
         <main class="container">
-            <div class="row">
-                <a href="https://tauri.app" target="_blank">
-                    <img src="public/tauri.svg" class="logo tauri" alt="Tauri logo"/>
-                </a>
-                <a href="https://docs.rs/leptos/" target="_blank">
-                    <img src="public/leptos.svg" class="logo leptos" alt="Leptos logo"/>
-                </a>
-            </div>
-
-            <p>"Click on the Tauri and Leptos logos to l."</p>
-
-            <p>
-                "Recommended IDE setup: "
-                <a href="https://code.visualstudio.com/" target="_blank">"VS Code"</a>
-                " + "
-                <a href="https://github.com/tauri-apps/tauri-vscode" target="_blank">"Tauri"</a>
-                " + "
-                <a href="https://github.com/rust-lang/rust-analyzer" target="_blank">"rust-analyzer"</a>
-            </p>
-
             <form class="row" on:submit=greet>
                 <input
                     id="greet-input"
@@ -93,6 +77,18 @@ pub fn App() -> impl IntoView {
                 />
                 <button type="submit">"Greet"</button>
             </form>
+
+            <ul>
+            {
+            move || {
+                categories.0.get().categories.into_iter().map(
+                |val| {
+                    view!{<li>{val.display_name}</li>}
+                }
+                ).collect_view()
+            }
+            }
+            </ul>
 
             <p><b>{ move || greet_msg.get() }</b></p>
         </main>

@@ -1,14 +1,14 @@
 #![allow(dead_code, unused_imports)]
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use serde_json::{Result, Value};
 
-#[derive(Debug, Serialize, Deserialize)]
+pub const TABLE_ID: &str = "category";
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Category {
     pub display_name: String,
 }
-
-pub const TABLE_ID: &str = "category";
 
 impl Category {
     pub fn sql_schema() -> String {
@@ -20,12 +20,18 @@ impl Category {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CategoryList {
     pub categories: Vec<Category>,
 }
 
 impl CategoryList {
+    pub fn new () -> CategoryList {
+        CategoryList {
+            categories: vec![],
+        }
+    }
+
     pub fn to_json_string(&self) -> String {
         return serde_json::to_string(self).unwrap();
     }

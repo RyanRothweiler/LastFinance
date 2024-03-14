@@ -75,7 +75,6 @@ impl Database {
 
     pub fn get_all_categories(&self) -> Vec<Category> {
         let query = format!("SELECT display_name FROM {}", data::category::TABLE_ID);
-        println!("{query}");
 
         let mut stmt = self.connection.prepare(&query).unwrap();
 

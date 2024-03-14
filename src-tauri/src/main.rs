@@ -18,16 +18,10 @@ struct State {
 }
 
 #[tauri::command]
-fn create_category(name: &str, ts: tauri::State<State>) -> String {
+fn create_category(name: &str, ts: tauri::State<State>) {
     let conn = ts.db.lock().unwrap();
     conn.insert_category(name);
     println!("Inserted new category {}", name);
-
-    let cat = Category {
-        display_name: "wtf".to_string(),
-    };
-
-    return cat.to_json_string();
 }
 
 #[tauri::command]
@@ -39,7 +33,7 @@ fn get_all_categories(ts: tauri::State<State>) -> String {
 
 fn main() {
     let state = State {
-        db: Mutex::new(Database::new("db.db3")),
+        db: Mutex::new(Database::new("C:/Digital Archive/db.db3")),
     };
 
     tauri::Builder::default()
