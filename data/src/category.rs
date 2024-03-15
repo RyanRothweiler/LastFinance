@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct Category {
     pub display_name: String,
 }
@@ -27,7 +27,7 @@ impl super::Table for Category {
     }
 
     fn to_insert_data(&self) -> String {
-        return format!(" {} ", self.display_name);
+        return format!("{}", self.display_name);
     }
 }
 

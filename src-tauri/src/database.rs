@@ -82,6 +82,20 @@ impl Database {
         return ret;
     }
 
+    pub fn get_category(&self, id: i64) -> Result<Category> {
+        let query = format!(
+            "SELECT display_name FROM {} WHERE ROWID={}",
+            data::category::Category::get_table_name(),
+            id
+        );
+
+        self.connection.query_row(&query, [], |row| {
+            Ok(Category {
+                display_name: row.get(0).unwrap(),
+            })
+        })
+    }
+
     pub fn insert<T: data::Table>(&self, data: T) {
         let mut query = String::new();
         query.push_str("INSERT INTO ");
@@ -97,6 +111,11 @@ impl Database {
 
         println!("{query}");
         self.connection.execute(&query, ()).unwrap();
+    }
+
+    pub fn get<T: data::Table>(&self) -> Result<T, String> {
+        //let d =
+        return Err("error".to_string());
     }
 
     pub fn get_account(&self, id: i64) -> Result<Account, String> {
@@ -151,11 +170,19 @@ fn database_setup() {
 }
 
 #[test]
-fn insert() {
+fn insert_get() {
     let db = test_setup_db();
 
     let cat = Category {
         display_name: "testing here".to_string(),
     };
     db.insert(cat);
+
+    let cat_ret = db.get_category(1);
+    assert_eq!(
+        cat_ret,
+        Ok(Category {
+            display_name: "testing here".to_string(),
+        })
+    );
 }
