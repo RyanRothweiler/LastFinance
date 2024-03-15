@@ -20,7 +20,12 @@ struct State {
 #[tauri::command]
 fn create_category(name: &str, ts: tauri::State<State>) {
     let conn = ts.db.lock().unwrap();
-    conn.insert_category(name);
+
+    let cat = Category {
+        display_name: name.to_string(),
+    };
+    conn.insert(cat);
+
     println!("Inserted new category {}", name);
 }
 
