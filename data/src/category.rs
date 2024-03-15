@@ -1,9 +1,6 @@
-#![allow(dead_code, unused_imports)]
+#![allow(dead_code)]
 
 use serde::{Deserialize, Serialize};
-use serde_json::{Result, Value};
-
-pub const TABLE_ID: &str = "category";
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Category {
@@ -11,12 +8,18 @@ pub struct Category {
 }
 
 impl Category {
-    pub fn sql_schema() -> String {
-        return "display_name    TEXT NOT NULL".to_string();
-    }
-
     pub fn to_json_string(&self) -> String {
         return serde_json::to_string(self).unwrap();
+    }
+}
+
+impl super::Table for Category {
+    fn get_table_name() -> String {
+        return "categories".to_string();
+    }
+
+    fn get_table_schema() -> String {
+        return "display_name   INTEGER NOT NULL".to_string();
     }
 }
 
@@ -26,10 +29,8 @@ pub struct CategoryList {
 }
 
 impl CategoryList {
-    pub fn new () -> CategoryList {
-        CategoryList {
-            categories: vec![],
-        }
+    pub fn new() -> CategoryList {
+        CategoryList { categories: vec![] }
     }
 
     pub fn to_json_string(&self) -> String {

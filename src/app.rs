@@ -30,7 +30,6 @@ async fn get_category_list() -> CategoryList {
 #[component]
 pub fn App() -> impl IntoView {
     let (name, set_name) = create_signal(String::new());
-    let (greet_msg, set_greet_msg) = create_signal(String::new());
     let categories = create_signal::<CategoryList>(CategoryList::new());
 
     let category_init = create_resource(
@@ -69,15 +68,6 @@ pub fn App() -> impl IntoView {
 
     view! {
         <main class="container">
-            <form class="row" on:submit=greet>
-                <input
-                    id="greet-input"
-                    placeholder="Enter a name..."
-                    on:input=update_name
-                />
-                <button type="submit">"Greet"</button>
-            </form>
-
             <ul>
             {
             move || {
@@ -90,7 +80,14 @@ pub fn App() -> impl IntoView {
             }
             </ul>
 
-            <p><b>{ move || greet_msg.get() }</b></p>
+            <form class="row" on:submit=greet>
+                <input
+                    id="greet-input"
+                    placeholder="Enter a name..."
+                    on:input=update_name
+                />
+                <button type="submit">"Add Category"</button>
+            </form>
         </main>
     }
 }

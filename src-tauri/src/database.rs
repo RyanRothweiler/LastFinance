@@ -1,7 +1,9 @@
 use rusqlite::{params, Connection, Result};
 
+use data::Table;
 use data::category::Category;
 use data::category::CategoryList;
+use data::transaction::Transaction;
 
 pub struct Database {
     connection: Connection,
@@ -15,18 +17,20 @@ impl Database {
             connection: connection,
         };
 
-        // setup initial tables
-        if !db.table_exists(data::category::TABLE_ID) {
-            let query = format!(
-                "CREATE TABLE {} ( {} )",
-                data::category::TABLE_ID,
-                Category::sql_schema()
-            );
-            db.connection.execute(&query, ()).unwrap();
-            println!("Created category table");
-        }
+        Self::setup_table::<Category>(&db);
+        Self::setup_table::<Transaction>(&db);
 
         return db;
+    }
+
+    fn setup_table<T: data::Table>(db: &Database) {
+        let table_name = &T::get_table_name();
+
+        if !db.table_exists(table_name) {
+            let query = format!("CREATE TABLE {} ( {} )", table_name, T::get_table_schema());
+            db.connection.execute(&query, ()).unwrap();
+            println!("Created table {}", table_name);
+        }
     }
 
     pub fn table_exists(&self, table: &str) -> bool {
@@ -74,7 +78,7 @@ impl Database {
     }
 
     pub fn get_all_categories(&self) -> Vec<Category> {
-        let query = format!("SELECT display_name FROM {}", data::category::TABLE_ID);
+        let query = format!("SELECT display_name FROM {}", data::category::Category::get_table_name());
 
         let mut stmt = self.connection.prepare(&query).unwrap();
 
@@ -97,7 +101,7 @@ impl Database {
     pub fn insert_category(&self, display_name: &str) {
         let query: String = format!(
             "INSERT INTO {:?} ( display_name ) VALUES ('{}')",
-            data::category::TABLE_ID,
+            data::category::Category::get_table_name(),
             display_name,
         );
         self.connection.execute(&query, ()).unwrap();
