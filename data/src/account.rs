@@ -17,10 +17,10 @@ impl super::Table for Account {
     }
 
     fn get_insert_schema() -> String {
-        todo!()
+        return "balance".to_string();
     }
 
     fn to_insert_data(&self) -> String {
-        todo!()
+        return format!("{}", self.balance);
     }
 }

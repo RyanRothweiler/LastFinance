@@ -120,8 +120,9 @@ impl Database {
 
     pub fn get_account(&self, id: i64) -> Result<Account, String> {
         let query = format!(
-            "SELECT balance  FROM {}",
-            data::account::Account::get_table_name()
+            "SELECT balance FROM {} WHERE ROWID={}",
+            data::account::Account::get_table_name(),
+            id
         );
 
         let mut stmt = self.connection.prepare(&query).unwrap();
@@ -149,8 +150,19 @@ impl Database {
         return Ok(accounts[0].clone());
     }
 
+    // adds to the amount in the account
     pub fn fund_account(&self, amount: i64, id: i64) -> Result<(), String> {
         let account: Account = self.get_account(id)?;
+        let new_bal = account.balance + amount;
+
+        let update_query = format!(
+            "UPDATE {} SET balance = {} WHERE ROWID = {}",
+            data::account::Account::get_table_name(),
+            new_bal,
+            id,
+        );
+        self.connection.execute(&update_query, ()).unwrap();
+
         println!("account {} funded {}", id, amount);
         Ok(())
     }
@@ -185,4 +197,17 @@ fn insert_get() {
             display_name: "testing here".to_string(),
         })
     );
+}
+
+#[test]
+fn fund_get_ccount() {
+    let db = test_setup_db();
+
+    let ac = Account { balance: 0 };
+    db.insert(ac);
+
+    db.fund_account(data::dollars_to_cents(123.45), 1).unwrap();
+
+    let ac = db.get_account(1).unwrap();
+    assert_eq!(ac.balance, 12345);
 }
