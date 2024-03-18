@@ -24,3 +24,18 @@ impl super::Table for Account {
         return format!("{}", self.balance);
     }
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct AccountList {
+    pub accounts: Vec<Account>,
+}
+
+impl AccountList {
+    pub fn new() -> AccountList {
+        AccountList { accounts: vec![] }
+    }
+
+    pub fn to_json_string(&self) -> String {
+        return serde_json::to_string(self).unwrap();
+    }
+}

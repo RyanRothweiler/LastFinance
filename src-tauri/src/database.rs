@@ -1,3 +1,5 @@
+#![allow(unused_macros)]
+
 use rusqlite::{params, Connection, Result};
 
 use data::account::Account;
@@ -5,6 +7,22 @@ use data::category::Category;
 use data::category::CategoryList;
 use data::transaction::Transaction;
 use data::Table;
+
+mod table_actions;
+use table_actions::TableActions;
+
+macro_rules! function {
+    () => {{
+        fn f() {}
+        fn type_name_of<T>(_: T) -> &'static str {
+            std::any::type_name::<T>()
+        }
+        type_name_of(f)
+            .rsplit("::")
+            .find(|&part| part != "f" && part != "{{closure}}")
+            .expect("Short function name")
+    }};
+}
 
 pub struct Database {
     connection: Connection,
@@ -35,7 +53,55 @@ impl Database {
         return db;
     }
 
-    pub fn table_exists(&self, table: &str) -> bool {
+    fn insert<T: data::Table>(&self, data: T) {
+        let mut query = String::new();
+        query.push_str("INSERT INTO ");
+        query.push_str(&T::get_table_name());
+
+        query.push_str(" ( ");
+        query.push_str(&T::get_insert_schema());
+        query.push_str(" ) ");
+
+        query.push_str(" VALUES ('");
+        query.push_str(&data.to_insert_data());
+        query.push_str("')");
+
+        println!("{query}");
+        self.connection.execute(&query, ()).unwrap();
+    }
+
+    pub fn get<T: TableActions + data::Table>(&self, id: i64) -> T {
+        let query = format!(
+            "SELECT {} FROM {} WHERE ROWID={}",
+            T::get_insert_schema(),
+            T::get_table_name(),
+            id
+        );
+
+        self.connection
+            .query_row(&query, [], |row| Ok(T::row_to_data(row)))
+            .unwrap()
+    }
+
+    pub fn get_all<T: TableActions + data::Table>(&self) -> Vec<T> {
+        let query = format!(
+            "SELECT {} FROM {}",
+            T::get_insert_schema(),
+            T::get_table_name(),
+        );
+
+        let mut stmt = self.connection.prepare(&query).unwrap();
+        let iter = stmt.query_map([], |row| Ok(T::row_to_data(row))).unwrap();
+
+        let mut ret: Vec<T> = vec![];
+        for c in iter {
+            ret.push(c.unwrap());
+        }
+
+        return ret;
+    }
+
+    fn table_exists(&self, table: &str) -> bool {
         #[derive(Debug)]
         struct Entry {
             name: String,
@@ -58,71 +124,10 @@ impl Database {
         return false;
     }
 
-    pub fn get_all_categories(&self) -> Vec<Category> {
+    pub fn get_all_account(&self) -> Vec<Account> {
         let query = format!(
-            "SELECT display_name FROM {}",
-            data::category::Category::get_table_name()
-        );
-
-        let mut stmt = self.connection.prepare(&query).unwrap();
-
-        let iter = stmt
-            .query_map([], |row| {
-                Ok(Category {
-                    display_name: row.get(0)?,
-                })
-            })
-            .unwrap();
-
-        let mut ret: Vec<Category> = vec![];
-        for c in iter {
-            ret.push(c.unwrap());
-        }
-
-        return ret;
-    }
-
-    pub fn get_category(&self, id: i64) -> Result<Category> {
-        let query = format!(
-            "SELECT display_name FROM {} WHERE ROWID={}",
-            data::category::Category::get_table_name(),
-            id
-        );
-
-        self.connection.query_row(&query, [], |row| {
-            Ok(Category {
-                display_name: row.get(0).unwrap(),
-            })
-        })
-    }
-
-    pub fn insert<T: data::Table>(&self, data: T) {
-        let mut query = String::new();
-        query.push_str("INSERT INTO ");
-        query.push_str(&T::get_table_name());
-
-        query.push_str(" ( ");
-        query.push_str(&T::get_insert_schema());
-        query.push_str(" ) ");
-
-        query.push_str(" VALUES ('");
-        query.push_str(&data.to_insert_data());
-        query.push_str("')");
-
-        println!("{query}");
-        self.connection.execute(&query, ()).unwrap();
-    }
-
-    pub fn get<T: data::Table>(&self) -> Result<T, String> {
-        //let d =
-        return Err("error".to_string());
-    }
-
-    pub fn get_account(&self, id: i64) -> Result<Account, String> {
-        let query = format!(
-            "SELECT balance FROM {} WHERE ROWID={}",
-            data::account::Account::get_table_name(),
-            id
+            "SELECT balance FROM {}",
+            data::account::Account::get_table_name()
         );
 
         let mut stmt = self.connection.prepare(&query).unwrap();
@@ -135,24 +140,17 @@ impl Database {
             })
             .unwrap();
 
-        let mut accounts: Vec<Account> = vec![];
+        let mut ret: Vec<Account> = vec![];
         for c in iter {
-            accounts.push(c.unwrap());
+            ret.push(c.unwrap());
         }
 
-        if accounts.len() == 0 {
-            return Err("No account with that ID".to_string());
-        }
-        if accounts.len() >= 2 {
-            return Err("Multiple accounts with that ID".to_string());
-        }
-
-        return Ok(accounts[0].clone());
+        return ret;
     }
 
     // adds to the amount in the account
     pub fn fund_account(&self, amount: i64, id: i64) -> Result<(), String> {
-        let account: Account = self.get_account(id)?;
+        let account: Account = self.get::<Account>(id);
         let new_bal = account.balance + amount;
 
         let update_query = format!(
@@ -166,48 +164,76 @@ impl Database {
         println!("account {} funded {}", id, amount);
         Ok(())
     }
+
+    pub fn create_category(&self, name: &str) {
+        self.insert(Category {
+            display_name: name.to_string(),
+        });
+    }
+
+    pub fn create_account(&self) {
+        self.insert(Account { balance: 0 });
+    }
 }
 
-fn test_setup_db() -> Database {
-    let db_dir = "C:/Digital Archive/testing_db.db3";
+fn test_setup_db(name: &str) -> Database {
+    let db_dir = &format!("C:/Digital Archive/{}_db.db3", name);
     let _ = std::fs::remove_file(db_dir);
 
     let db = Database::new(db_dir);
     return db;
 }
 
+fn test_remove_db(name: &str, db: Database) {
+    db.connection.close().unwrap();
+
+    let db_dir = format!("C:/Digital Archive/{}_db.db3", name);
+    std::fs::remove_file(db_dir).unwrap();
+}
+
 #[test]
 fn database_setup() {
-    let db = test_setup_db();
+    let db = test_setup_db(function!());
+    test_remove_db(function!(), db);
 }
 
 #[test]
 fn insert_get() {
-    let db = test_setup_db();
+    let db = test_setup_db(function!());
+    db.create_category("testing here");
 
-    let cat = Category {
-        display_name: "testing here".to_string(),
-    };
-    db.insert(cat);
-
-    let cat_ret = db.get_category(1);
+    let cat_ret = db.get::<Category>(1);
     assert_eq!(
         cat_ret,
-        Ok(Category {
+        Category {
             display_name: "testing here".to_string(),
-        })
+        }
     );
+
+    test_remove_db(function!(), db);
 }
 
 #[test]
 fn fund_get_ccount() {
-    let db = test_setup_db();
-
-    let ac = Account { balance: 0 };
-    db.insert(ac);
-
+    let db = test_setup_db(function!());
+    db.create_account();
     db.fund_account(data::dollars_to_cents(123.45), 1).unwrap();
 
-    let ac = db.get_account(1).unwrap();
+    let ac = db.get::<Account>(1);
     assert_eq!(ac.balance, 12345);
+
+    test_remove_db(function!(), db);
+}
+
+#[test]
+fn get_all_categories() {
+    let db = test_setup_db(function!());
+
+    db.create_category("first");
+    db.create_category("second");
+
+    let categories = db.get_all::<Category>();
+    assert_eq!(categories.len(), 2);
+
+    test_remove_db(function!(), db);
 }
