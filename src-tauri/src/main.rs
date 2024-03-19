@@ -41,7 +41,7 @@ fn get_all_categories(ts: tauri::State<State>) -> String {
 #[tauri::command]
 fn get_all_accounts(ts: tauri::State<State>) -> String {
     let mut list: AccountList = AccountList::new();
-    list.accounts = ts.db.lock().unwrap().get_all_account();
+    list.accounts = ts.db.lock().unwrap().get_all::<Account>();
     return list.to_json_string();
 }
 

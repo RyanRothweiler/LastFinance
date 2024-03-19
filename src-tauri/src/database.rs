@@ -6,7 +6,6 @@ use data::account::Account;
 use data::category::Category;
 use data::category::CategoryList;
 use data::transaction::Transaction;
-use data::Table;
 
 mod table_actions;
 use table_actions::TableActions;
@@ -36,7 +35,7 @@ impl Database {
             connection: connection,
         };
 
-        fn setup_table<T: data::Table>(db: &Database) {
+        fn setup_table<T: TableActions>(db: &Database) {
             let table_name = &T::get_table_name();
 
             if !db.table_exists(table_name) {
@@ -47,13 +46,13 @@ impl Database {
         }
 
         setup_table::<Category>(&db);
-        setup_table::<Transaction>(&db);
         setup_table::<Account>(&db);
+        //setup_table::<Transaction>(&db);
 
         return db;
     }
 
-    fn insert<T: data::Table>(&self, data: T) {
+    fn insert<T: TableActions>(&self, data: T) {
         let mut query = String::new();
         query.push_str("INSERT INTO ");
         query.push_str(&T::get_table_name());
@@ -70,7 +69,7 @@ impl Database {
         self.connection.execute(&query, ()).unwrap();
     }
 
-    pub fn get<T: TableActions + data::Table>(&self, id: i64) -> T {
+    pub fn get<T: TableActions>(&self, id: i64) -> T {
         let query = format!(
             "SELECT {} FROM {} WHERE ROWID={}",
             T::get_insert_schema(),
@@ -83,7 +82,7 @@ impl Database {
             .unwrap()
     }
 
-    pub fn get_all<T: TableActions + data::Table>(&self) -> Vec<T> {
+    pub fn get_all<T: TableActions>(&self) -> Vec<T> {
         let query = format!(
             "SELECT {} FROM {}",
             T::get_insert_schema(),
@@ -124,30 +123,6 @@ impl Database {
         return false;
     }
 
-    pub fn get_all_account(&self) -> Vec<Account> {
-        let query = format!(
-            "SELECT balance FROM {}",
-            data::account::Account::get_table_name()
-        );
-
-        let mut stmt = self.connection.prepare(&query).unwrap();
-
-        let iter = stmt
-            .query_map([], |row| {
-                Ok(Account {
-                    balance: row.get(0)?,
-                })
-            })
-            .unwrap();
-
-        let mut ret: Vec<Account> = vec![];
-        for c in iter {
-            ret.push(c.unwrap());
-        }
-
-        return ret;
-    }
-
     // adds to the amount in the account
     pub fn fund_account(&self, amount: i64, id: i64) -> Result<(), String> {
         let account: Account = self.get::<Account>(id);
@@ -176,64 +151,70 @@ impl Database {
     }
 }
 
-fn test_setup_db(name: &str) -> Database {
-    let db_dir = &format!("C:/Digital Archive/{}_db.db3", name);
-    let _ = std::fs::remove_file(db_dir);
+#[cfg(test)]
+mod tests {
 
-    let db = Database::new(db_dir);
-    return db;
-}
+    use super::*;
 
-fn test_remove_db(name: &str, db: Database) {
-    db.connection.close().unwrap();
+    fn test_setup_db(name: &str) -> Database {
+        let db_dir = &format!("C:/Digital Archive/{}_db.db3", name);
+        let _ = std::fs::remove_file(db_dir);
 
-    let db_dir = format!("C:/Digital Archive/{}_db.db3", name);
-    std::fs::remove_file(db_dir).unwrap();
-}
+        let db = Database::new(db_dir);
+        return db;
+    }
 
-#[test]
-fn database_setup() {
-    let db = test_setup_db(function!());
-    test_remove_db(function!(), db);
-}
+    fn test_remove_db(name: &str, db: Database) {
+        db.connection.close().unwrap();
 
-#[test]
-fn insert_get() {
-    let db = test_setup_db(function!());
-    db.create_category("testing here");
+        let db_dir = format!("C:/Digital Archive/{}_db.db3", name);
+        std::fs::remove_file(db_dir).unwrap();
+    }
 
-    let cat_ret = db.get::<Category>(1);
-    assert_eq!(
-        cat_ret,
-        Category {
-            display_name: "testing here".to_string(),
-        }
-    );
+    #[test]
+    fn database_setup() {
+        let db = test_setup_db(function!());
+        test_remove_db(function!(), db);
+    }
 
-    test_remove_db(function!(), db);
-}
+    #[test]
+    fn insert_get() {
+        let db = test_setup_db(function!());
+        db.create_category("testing here");
 
-#[test]
-fn fund_get_ccount() {
-    let db = test_setup_db(function!());
-    db.create_account();
-    db.fund_account(data::dollars_to_cents(123.45), 1).unwrap();
+        let cat_ret = db.get::<Category>(1);
+        assert_eq!(
+            cat_ret,
+            Category {
+                display_name: "testing here".to_string(),
+            }
+        );
 
-    let ac = db.get::<Account>(1);
-    assert_eq!(ac.balance, 12345);
+        test_remove_db(function!(), db);
+    }
 
-    test_remove_db(function!(), db);
-}
+    #[test]
+    fn fund_get_ccount() {
+        let db = test_setup_db(function!());
+        db.create_account();
+        db.fund_account(data::dollars_to_cents(123.45), 1).unwrap();
 
-#[test]
-fn get_all_categories() {
-    let db = test_setup_db(function!());
+        let ac = db.get::<Account>(1);
+        assert_eq!(ac.balance, 12345);
 
-    db.create_category("first");
-    db.create_category("second");
+        test_remove_db(function!(), db);
+    }
 
-    let categories = db.get_all::<Category>();
-    assert_eq!(categories.len(), 2);
+    #[test]
+    fn get_all_categories() {
+        let db = test_setup_db(function!());
 
-    test_remove_db(function!(), db);
+        db.create_category("first");
+        db.create_category("second");
+
+        let categories = db.get_all::<Category>();
+        assert_eq!(categories.len(), 2);
+
+        test_remove_db(function!(), db);
+    }
 }

@@ -11,6 +11,7 @@ pub struct Transaction {
     amount: i64,
 }
 
+/*
 impl super::Table for Transaction {
     fn get_table_name() -> String {
         return "transactions".to_string();
@@ -31,6 +32,7 @@ impl super::Table for Transaction {
         todo!()
     }
 }
+*/
 
 impl Transaction {
     pub fn new(source: i64, dest: i64, amount: i64) -> Transaction {

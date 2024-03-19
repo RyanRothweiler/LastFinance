@@ -13,24 +13,6 @@ impl Category {
     }
 }
 
-impl super::Table for Category {
-    fn get_table_name() -> String {
-        return "categories".to_string();
-    }
-
-    fn get_table_schema() -> String {
-        return "display_name   INTEGER NOT NULL".to_string();
-    }
-
-    fn get_insert_schema() -> String {
-        return "display_name".to_string();
-    }
-
-    fn to_insert_data(&self) -> String {
-        return format!("{}", self.display_name);
-    }
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CategoryList {
     pub categories: Vec<Category>,

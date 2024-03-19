@@ -5,9 +5,12 @@ use rusqlite::{params, Connection, Result, Row, Rows};
 use data::account::Account;
 use data::category::Category;
 use data::category::CategoryList;
-use data::Table;
 
 pub trait TableActions {
+    fn get_table_name() -> String;
+    fn get_table_schema() -> String;
+    fn get_insert_schema() -> String;
+    fn to_insert_data(&self) -> String;
     fn row_to_data(row: &Row) -> Self;
 }
 
@@ -17,6 +20,22 @@ impl TableActions for super::Category {
             display_name: row.get(0).unwrap(),
         }
     }
+
+    fn get_table_name() -> String {
+        return "categories".to_string();
+    }
+
+    fn get_table_schema() -> String {
+        return "display_name   INTEGER NOT NULL".to_string();
+    }
+
+    fn get_insert_schema() -> String {
+        return "display_name".to_string();
+    }
+
+    fn to_insert_data(&self) -> String {
+        return format!("{}", self.display_name);
+    }
 }
 
 impl TableActions for super::Account {
@@ -24,5 +43,21 @@ impl TableActions for super::Account {
         Account {
             balance: row.get(0).unwrap(),
         }
+    }
+
+    fn get_table_name() -> String {
+        return "accounts".to_string();
+    }
+
+    fn get_table_schema() -> String {
+        return "balance   INTEGER NOT NULL".to_string();
+    }
+
+    fn get_insert_schema() -> String {
+        return "balance".to_string();
+    }
+
+    fn to_insert_data(&self) -> String {
+        return format!("{}", self.balance);
     }
 }
