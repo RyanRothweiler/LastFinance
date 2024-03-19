@@ -65,7 +65,6 @@ impl Database {
         query.push_str(&data.to_insert_data());
         query.push_str("')");
 
-        println!("{query}");
         self.connection.execute(&query, ()).unwrap();
     }
 
