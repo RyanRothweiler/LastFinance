@@ -95,7 +95,10 @@ pub fn App() -> impl IntoView {
     };
 
     view! {
-        <main class="container">
+        <html data-bs-theme="dark">
+        <body>
+
+
             <ul>
             {
             move || {
@@ -126,7 +129,7 @@ pub fn App() -> impl IntoView {
                     placeholder="Enter a name..."
                     on:input=update_name
                 />
-                <button type="submit">"Add Category"</button>
+                <button class="btn btn-primary" type="submit">"Add Category"</button>
             </form>
 
             <form class="row" on:submit=submit_account>
@@ -135,10 +138,22 @@ pub fn App() -> impl IntoView {
                 node_ref=input_element
                 />
 
-                <button type="submit">"Add Account"</button>
+                <button class="btn btn-primary" type="button">"Add Account"</button>
 
             </form>
 
-        </main>
+
+            <div class="dropdown" data-bs-theme="dark">
+              <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButtonDark" data-bs-toggle="dropdown" aria-expanded="false">
+                Dark dropdown
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonDark">
+                <li><a class="dropdown-item active" href="#">Action</a></li>
+                <li><a class="dropdown-item" href="#">Action</a></li>
+              </ul>
+            </div>
+
+        </body>
+        </html>
     }
 }
