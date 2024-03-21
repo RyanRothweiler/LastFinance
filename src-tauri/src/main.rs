@@ -29,6 +29,7 @@ fn create_category(name: &str, ts: tauri::State<State>) {
 fn create_account(ts: tauri::State<State>) {
     let conn = ts.db.lock().unwrap();
     conn.create_account();
+    println!("creating account");
 }
 
 #[tauri::command]

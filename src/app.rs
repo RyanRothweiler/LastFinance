@@ -148,7 +148,7 @@ pub fn App() -> impl IntoView {
                                 node_ref=input_element
                                 />
 
-                                <button class="btn btn-primary" type="button">"Add Account"</button>
+                                <button class="btn btn-primary" type="submit">"Add Account"</button>
 
                             </form>
                         </div>
