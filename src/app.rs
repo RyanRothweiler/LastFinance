@@ -40,6 +40,33 @@ async fn get_account_list() -> AccountList {
 }
 
 #[component]
+pub fn Nav() -> impl IntoView {
+    view! {
+
+        <nav class="col-md-2 d-none d-md-block sidebar">
+            <div class="sidebar-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link">Bar Here</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link">Bar Here</a>
+                    </li>
+
+                </ul>
+                <h6 class="sidebar-heading text-muted justify-content-between aign-items-center">Accounts</h6>
+                
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <button type="button" class="btn btn-outline-secondary btn-sm">Add Account</button>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    }
+}
+
+#[component]
 pub fn App() -> impl IntoView {
     let categories = create_signal::<CategoryList>(CategoryList::new());
     let category_res = create_resource(
@@ -91,78 +118,85 @@ pub fn App() -> impl IntoView {
     let submit_account = move |ev: SubmitEvent| {
         ev.prevent_default();
         let val = input_element.get().expect("heyo").value();
-        log!("elemtn thin! {}", val);
     };
 
     view! {
         <html data-bs-theme="dark">
         <body>
-            <div class="container">
+        <main>
+            <div class="container-fluid">
 
-                <div class="row gx-5">
+                <div class="row">
+                    <Nav/>
+                    <div class="col-md-9">
 
-                    <ul>
-                    {
-                    move || {
-                        accounts.0.get().accounts.into_iter().map(
-                        |val| {
-                            view!{<li>{val.balance}</li>}
+                        <ul>
+                        {
+                        move || {
+                            accounts.0.get().accounts.into_iter().map(
+                            |val| {
+                                view!{<li>{val.balance}</li>}
+                            }
+                            ).collect_view()
                         }
-                        ).collect_view()
-                    }
-                    }
-                    </ul>
-
-                    <ul>
-                    {
-                    move || {
-                        categories.0.get().categories.into_iter().map(
-                        |val| {
-                            view!{<li>{val.display_name}</li>}
                         }
-                        ).collect_view()
-                    }
-                    }
-                    </ul>
+                        </ul>
 
-                    <div class="col">
-                        <form class="row" on:submit=greet>
-                            <input
-                                id="greet-input"
+                        <ul>
+                        {
+                        move || {
+                            categories.0.get().categories.into_iter().map(
+                            |val| {
+                                view!{<li>{val.display_name}</li>}
+                            }
+                            ).collect_view()
+                        }
+                        }
+                        </ul>
+
+                        <div class="col">
+                            <form class="row" on:submit=greet>
+                                <input
+                                    id="greet-input"
+                                    placeholder="Enter a name..."
+                                    on:input=update_name
+                                />
+                                <button class="btn btn-primary" type="submit">"Add Category"</button>
+                            </form>
+                        </div>
+
+
+                        <div class="col">
+                            <form class="row" on:submit=submit_account>
+                            <input type="text"
                                 placeholder="Enter a name..."
-                                on:input=update_name
-                            />
-                            <button class="btn btn-primary" type="submit">"Add Category"</button>
-                        </form>
+                                node_ref=input_element
+                                />
+
+                                <button class="btn btn-primary" type="button">"Add Account"</button>
+
+                            </form>
+                        </div>
+
+
+                        <div class="dropdown" data-bs-theme="dark">
+                          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButtonDark" data-bs-toggle="dropdown" aria-expanded="false">
+                            Dark dropdown
+                          </button>
+                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonDark">
+                            <li><a class="dropdown-item active" href="#">Action</a></li>
+                            <li><a class="dropdown-item" href="#">Action</a></li>
+                          </ul>
+                        </div>
+
+
                     </div>
-
-
-                    <div class="col">
-                        <form class="row" on:submit=submit_account>
-                        <input type="text"
-                            placeholder="Enter a name..."
-                            node_ref=input_element
-                            />
-
-                            <button class="btn btn-primary" type="button">"Add Account"</button>
-
-                        </form>
-                    </div>
-                </div>
-
-
-                <div class="dropdown" data-bs-theme="dark">
-                  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButtonDark" data-bs-toggle="dropdown" aria-expanded="false">
-                    Dark dropdown
-                  </button>
-                  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonDark">
-                    <li><a class="dropdown-item active" href="#">Action</a></li>
-                    <li><a class="dropdown-item" href="#">Action</a></li>
-                  </ul>
                 </div>
 
 
             </div>
+
+        </main>
         </body>
         </html>
     }
