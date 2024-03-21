@@ -42,6 +42,7 @@ impl TableActions for super::Account {
     fn row_to_data(row: &Row) -> Self {
         Account {
             balance: row.get(0).unwrap(),
+            display_name: row.get(1).unwrap(),
         }
     }
 
@@ -50,14 +51,14 @@ impl TableActions for super::Account {
     }
 
     fn get_table_schema() -> String {
-        return "balance   INTEGER NOT NULL".to_string();
+        return "balance   INTEGER NOT NULL, dislay_name TEXT NOT NULL".to_string();
     }
 
     fn get_insert_schema() -> String {
-        return "balance".to_string();
+        return "balance display_name".to_string();
     }
 
     fn to_insert_data(&self) -> String {
-        return format!("{}", self.balance);
+        return format!("{} {}", self.balance, self.display_name);
     }
 }

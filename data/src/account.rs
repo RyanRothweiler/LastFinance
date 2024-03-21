@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Account {
     pub balance: i64,
+    pub display_name: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

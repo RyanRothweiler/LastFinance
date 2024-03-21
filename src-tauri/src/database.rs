@@ -146,7 +146,10 @@ impl Database {
     }
 
     pub fn create_account(&self) {
-        self.insert(Account { balance: 0 });
+        self.insert(Account {
+            balance: 0,
+            display_name: "account name here".to_string(),
+        });
     }
 }
 
