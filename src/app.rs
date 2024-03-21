@@ -1,5 +1,7 @@
 #![allow(unused_variables, unused_imports, dead_code)]
 
+mod nav;
+
 use leptos::leptos_dom::ev::SubmitEvent;
 use leptos::logging::*;
 use leptos::*;
@@ -37,33 +39,6 @@ async fn get_account_list() -> AccountList {
         .unwrap();
     let list: AccountList = serde_json::from_str(&json).unwrap();
     return list;
-}
-
-#[component]
-pub fn Nav() -> impl IntoView {
-    view! {
-
-        <nav class="col-md-2 d-none d-md-block sidebar">
-            <div class="sidebar-sticky">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link">Bar Here</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link">Bar Here</a>
-                    </li>
-
-                </ul>
-                <h6 class="sidebar-heading text-muted justify-content-between aign-items-center">Accounts</h6>
-                
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <button type="button" class="btn btn-outline-secondary btn-sm">Add Account</button>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-    }
 }
 
 #[component]
@@ -127,7 +102,7 @@ pub fn App() -> impl IntoView {
             <div class="container-fluid">
 
                 <div class="row">
-                    <Nav/>
+                    <nav::Nav/>
                     <div class="col-md-9">
 
                         <ul>
