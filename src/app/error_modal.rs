@@ -9,6 +9,7 @@ use serde_json;
 use serde_wasm_bindgen::to_value;
 
 pub fn show_error() { 
+    super::js::show_error();
     log!("show error!");
 }
 

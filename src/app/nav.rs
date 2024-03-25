@@ -20,8 +20,15 @@ pub fn Nav() -> impl IntoView {
             }
 
             let args = to_value(&Args { name: "new account" }).unwrap();
-            super::invoke("create_account", args).await;
-            log!("createing account");
+            let json = super::invoke("create_account", args).await.as_string().unwrap();
+
+            let res: Result<(), String> = serde_json::from_str(&json).unwrap();
+            match res {
+                Ok(()) => log!("success!"),
+                Err(v) => super::error_modal::show_error(),
+            }
+
+            log!("{}", json);
 
             //let cat_list = get_category_list().await;
             //categories.1.set(cat_list);

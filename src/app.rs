@@ -107,87 +107,87 @@ pub fn App() -> impl IntoView {
     };
 
     view! {
-            <html data-bs-theme="dark">
-            <body>
-            <main>
-                <div class="container-fluid">
+        <html data-bs-theme="dark">
+        <body>
+        <main>
+            <div class="container-fluid">
 
-                    <div class="row">
-                        <nav::Nav/>
-                        <div class="col-md-9">
+                <div class="row">
+                    <nav::Nav/>
+                    <div class="col-md-9">
 
-                            <ul>
-                            {
-                            move || {
-                                accounts.0.get().accounts.into_iter().map(
-                                |val| {
-                                    view!{<li>{val.balance}</li>}
-                                }
-                                ).collect_view()
+                        <ul>
+                        {
+                        move || {
+                            accounts.0.get().accounts.into_iter().map(
+                            |val| {
+                                view!{<li>{val.balance}</li>}
                             }
+                            ).collect_view()
+                        }
+                        }
+                        </ul>
+
+                        <ul>
+                        {
+                        move || {
+                            categories.0.get().categories.into_iter().map(
+                            |val| {
+                                view!{<li>{val.display_name}</li>}
                             }
-                            </ul>
+                            ).collect_view()
+                        }
+                        }
+                        </ul>
 
-                            <ul>
-                            {
-                            move || {
-                                categories.0.get().categories.into_iter().map(
-                                |val| {
-                                    view!{<li>{val.display_name}</li>}
-                                }
-                                ).collect_view()
-                            }
-                            }
-                            </ul>
-
-                            <div class="col">
-                                <form class="row" on:submit=greet>
-                                    <input
-                                        id="greet-input"
-                                        placeholder="Enter a name..."
-                                        on:input=update_name
-                                    />
-                                    <button class="btn btn-primary" type="submit">"Add Category"</button>
-                                </form>
-                            </div>
-
-
-                            <div class="col">
-                                <form class="row" on:submit=submit_account>
-                                <input type="text"
+                        <div class="col">
+                            <form class="row" on:submit=greet>
+                                <input
+                                    id="greet-input"
                                     placeholder="Enter a name..."
-                                    node_ref=input_element
-                                    />
-
-                                    <button class="btn btn-primary" type="submit">"Add Account"</button>
-
-                                </form>
-                            </div>
-
-
-                            <div class="dropdown" data-bs-theme="dark">
-                              <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButtonDark" data-bs-toggle="dropdown" aria-expanded="false">
-                                Dark dropdown
-                              </button>
-                              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonDark">
-                                <li><a class="dropdown-item active" href="#">Action</a></li>
-                                <li><a class="dropdown-item" href="#">Action</a></li>
-                              </ul>
-                            </div>
-
-                            <button type="button" class="btn btn-primary" on:click=|_| { js::show_error(); }>
-                            Show Error
-                            </button>
-                            <error_modal::ErrorModal/>
-
+                                    on:input=update_name
+                                />
+                                <button class="btn btn-primary" type="submit">"Add Category"</button>
+                            </form>
                         </div>
+
+
+                        <div class="col">
+                            <form class="row" on:submit=submit_account>
+                            <input type="text"
+                                placeholder="Enter a name..."
+                                node_ref=input_element
+                                />
+
+                                <button class="btn btn-primary" type="submit">"Add Account"</button>
+
+                            </form>
+                        </div>
+
+
+                        <div class="dropdown" data-bs-theme="dark">
+                          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButtonDark" data-bs-toggle="dropdown" aria-expanded="false">
+                            Dark dropdown
+                          </button>
+                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonDark">
+                            <li><a class="dropdown-item active" href="#">Action</a></li>
+                            <li><a class="dropdown-item" href="#">Action</a></li>
+                          </ul>
+                        </div>
+
+                        <button type="button" class="btn btn-primary" on:click=|_| { error_modal::show_error(); }>
+                        Show Error
+                        </button>
+                        <error_modal::ErrorModal/>
+
                     </div>
-
-
                 </div>
 
-            </main>
-            </body>
-            </html>
-        }
+
+            </div>
+
+        </main>
+        </body>
+        </html>
+    }
 }

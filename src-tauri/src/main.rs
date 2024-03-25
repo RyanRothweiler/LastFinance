@@ -8,10 +8,10 @@ use std::sync::Mutex;
 
 use rusqlite::{params, Connection, Result};
 
-use data::category::Category;
-use data::category::CategoryList;
 use data::account::Account;
 use data::account::AccountList;
+use data::category::Category;
+use data::category::CategoryList;
 
 use database::Database;
 
@@ -26,10 +26,14 @@ fn create_category(name: &str, ts: tauri::State<State>) {
 }
 
 #[tauri::command]
-fn create_account(ts: tauri::State<State>) {
+fn create_account(ts: tauri::State<State>) -> String {
     let conn = ts.db.lock().unwrap();
-    conn.create_account();
-    println!("creating account");
+    //conn.create_account().unwrap();
+
+    let res = conn.create_account();
+    return serde_json::to_string(&res).unwrap();
+
+    //return "heyo".to_string();
 }
 
 #[tauri::command]

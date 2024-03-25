@@ -52,7 +52,7 @@ impl Database {
         return db;
     }
 
-    fn insert<T: TableActions>(&self, data: T) {
+    fn insert<T: TableActions>(&self, data: T) -> Result<(), rusqlite::Error> {
         let mut query = String::new();
         query.push_str("INSERT INTO ");
         query.push_str(&T::get_table_name());
@@ -65,7 +65,8 @@ impl Database {
         query.push_str(&data.to_insert_data());
         query.push_str("')");
 
-        self.connection.execute(&query, ()).unwrap();
+        self.connection.execute(&query, ())?;
+        Ok(())
     }
 
     pub fn get<T: TableActions>(&self, id: i64) -> T {
@@ -142,14 +143,19 @@ impl Database {
     pub fn create_category(&self, name: &str) {
         self.insert(Category {
             display_name: name.to_string(),
-        });
+        })
+        .unwrap();
     }
 
-    pub fn create_account(&self) {
-        self.insert(Account {
+    pub fn create_account(&self) -> Result<(), String> {
+        let res = self.insert(Account {
             balance: 0,
             display_name: "account name here".to_string(),
         });
+        match res {
+            Ok(()) => Ok(()),
+            Err(t) => Err(format!("{}", t)),
+        }
     }
 }
 
@@ -198,7 +204,7 @@ mod tests {
     #[test]
     fn fund_get_ccount() {
         let db = test_setup_db(function!());
-        db.create_account();
+        db.create_account().unwrap();
         db.fund_account(data::dollars_to_cents(123.45), 1).unwrap();
 
         let ac = db.get::<Account>(1);
