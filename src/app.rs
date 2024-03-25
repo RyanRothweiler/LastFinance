@@ -34,6 +34,11 @@ mod js {
     }
 }
 
+#[derive(Clone, Debug, Default)]
+struct GlobalState {
+    error: String,
+}
+
 async fn get_category_list() -> CategoryList {
     let json = invoke("get_all_categories", JsValue::NULL)
         .await
@@ -54,6 +59,8 @@ async fn get_account_list() -> AccountList {
 
 #[component]
 pub fn App() -> impl IntoView {
+    provide_context(create_rw_signal(GlobalState::default()));
+
     let categories = create_signal::<CategoryList>(CategoryList::new());
     let category_res = create_resource(
         || (),
@@ -175,9 +182,6 @@ pub fn App() -> impl IntoView {
                           </ul>
                         </div>
 
-                        <button type="button" class="btn btn-primary" on:click=|_| { error_modal::show_error(); }>
-                        Show Error
-                        </button>
                         <error_modal::ErrorModal/>
 
                     </div>

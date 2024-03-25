@@ -11,6 +11,8 @@ use serde_wasm_bindgen::to_value;
 
 #[component]
 pub fn Nav() -> impl IntoView {
+    let global_state = expect_context::<RwSignal<super::GlobalState>>();
+
     let create_account = move |ev: SubmitEvent| {
         ev.prevent_default();
         spawn_local(async move {
@@ -25,7 +27,7 @@ pub fn Nav() -> impl IntoView {
             let res: Result<(), String> = serde_json::from_str(&json).unwrap();
             match res {
                 Ok(()) => log!("success!"),
-                Err(v) => super::error_modal::show_error(),
+                Err(v) => super::error_modal::show_error(v, &global_state),
             }
 
             log!("{}", json);
