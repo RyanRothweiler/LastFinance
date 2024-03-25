@@ -48,15 +48,6 @@ async fn get_category_list() -> CategoryList {
     return list;
 }
 
-async fn get_account_list() -> AccountList {
-    let json = invoke("get_all_accounts", JsValue::NULL)
-        .await
-        .as_string()
-        .unwrap();
-    let list: AccountList = serde_json::from_str(&json).unwrap();
-    return list;
-}
-
 #[component]
 pub fn App() -> impl IntoView {
     provide_context(create_rw_signal(GlobalState::default()));
@@ -67,15 +58,6 @@ pub fn App() -> impl IntoView {
         move |_| async move {
             let cat_list = get_category_list().await;
             categories.1.set(cat_list);
-        },
-    );
-
-    let accounts = create_signal::<AccountList>(AccountList::new());
-    let account_res = create_resource(
-        || (),
-        move |_| async move {
-            let list = get_account_list().await;
-            accounts.1.set(list);
         },
     );
 
@@ -123,19 +105,7 @@ pub fn App() -> impl IntoView {
                     <nav::Nav/>
                     <div class="col-md-9">
 
-                        <ul>
-                        {
-                        move || {
-                            accounts.0.get().accounts.into_iter().map(
-                            |val| {
-                                view!{<li>{val.balance}</li>}
-                            }
-                            ).collect_view()
-                        }
-                        }
-                        </ul>
-
-                        <ul>
+                       <ul>
                         {
                         move || {
                             categories.0.get().categories.into_iter().map(
