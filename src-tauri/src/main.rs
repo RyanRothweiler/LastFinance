@@ -20,20 +20,33 @@ struct State {
 }
 
 #[tauri::command]
-fn create_category(name: &str, ts: tauri::State<State>) {
-    let conn = ts.db.lock().unwrap();
-    conn.create_category(name);
+fn create_category(name: &str, ts: tauri::State<State>) -> String {
+    let conn_res = ts.db.lock();
+    let conn = match conn_res {
+        Ok(v) => v,
+        Err(v) => {
+            let ret: Result<(), String> = Result::Err("Error locking db.".to_string());
+            return serde_json::to_string(&ret).unwrap();
+        }
+    };
+
+    let res = conn.create_category(name);
+    return serde_json::to_string(&res).unwrap();
 }
 
 #[tauri::command]
-fn create_account(ts: tauri::State<State>) -> String {
-    let conn = ts.db.lock().unwrap();
-    //conn.create_account().unwrap();
+fn create_account(name: &str, ts: tauri::State<State>) -> String {
+    let conn_res = ts.db.lock();
+    let conn = match conn_res {
+        Ok(v) => v,
+        Err(v) => {
+            let ret: Result<(), String> = Result::Err("Error locking db.".to_string());
+            return serde_json::to_string(&ret).unwrap();
+        }
+    };
 
-    let res = conn.create_account();
+    let res = conn.create_account(name);
     return serde_json::to_string(&res).unwrap();
-
-    //return "heyo".to_string();
 }
 
 #[tauri::command]

@@ -61,9 +61,11 @@ impl Database {
         query.push_str(&T::get_insert_schema());
         query.push_str(" ) ");
 
-        query.push_str(" VALUES ('");
+        query.push_str(" VALUES (");
         query.push_str(&data.to_insert_data());
-        query.push_str("')");
+        query.push_str(")");
+
+        println!("{query}");
 
         self.connection.execute(&query, ())?;
         Ok(())
@@ -140,17 +142,20 @@ impl Database {
         Ok(())
     }
 
-    pub fn create_category(&self, name: &str) {
-        self.insert(Category {
+    pub fn create_category(&self, name: &str) -> Result<(), String> {
+        let res = self.insert(Category {
             display_name: name.to_string(),
-        })
-        .unwrap();
+        });
+        match res {
+            Ok(()) => Ok(()),
+            Err(t) => Err(format!("{}", t)),
+        }
     }
 
-    pub fn create_account(&self) -> Result<(), String> {
+    pub fn create_account(&self, name: &str) -> Result<(), String> {
         let res = self.insert(Account {
             balance: 0,
-            display_name: "account name here".to_string(),
+            display_name: name.to_string(),
         });
         match res {
             Ok(()) => Ok(()),
@@ -188,7 +193,7 @@ mod tests {
     #[test]
     fn insert_get() {
         let db = test_setup_db(function!());
-        db.create_category("testing here");
+        db.create_category("testing here").unwrap();
 
         let cat_ret = db.get::<Category>(1);
         assert_eq!(
@@ -204,7 +209,7 @@ mod tests {
     #[test]
     fn fund_get_ccount() {
         let db = test_setup_db(function!());
-        db.create_account().unwrap();
+        db.create_account("Ryans Account").unwrap();
         db.fund_account(data::dollars_to_cents(123.45), 1).unwrap();
 
         let ac = db.get::<Account>(1);
@@ -217,8 +222,8 @@ mod tests {
     fn get_all_categories() {
         let db = test_setup_db(function!());
 
-        db.create_category("first");
-        db.create_category("second");
+        db.create_category("first").unwrap();
+        db.create_category("second").unwrap();
 
         let categories = db.get_all::<Category>();
         assert_eq!(categories.len(), 2);

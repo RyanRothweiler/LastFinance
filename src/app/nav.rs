@@ -8,10 +8,11 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 use serde_wasm_bindgen::to_value;
 
-
 #[component]
 pub fn Nav() -> impl IntoView {
     let global_state = expect_context::<RwSignal<super::GlobalState>>();
+
+    let input_element: NodeRef<html::Input> = create_node_ref();
 
     let create_account = move |ev: SubmitEvent| {
         ev.prevent_default();
@@ -21,19 +22,20 @@ pub fn Nav() -> impl IntoView {
                 name: &'a str,
             }
 
-            let args = to_value(&Args { name: "new account" }).unwrap();
-            let json = super::invoke("create_account", args).await.as_string().unwrap();
+            let args = to_value(&Args {
+                name: &input_element.get().unwrap().value(),
+            })
+            .unwrap();
+            let json = super::invoke("create_account", args)
+                .await
+                .as_string()
+                .unwrap();
 
             let res: Result<(), String> = serde_json::from_str(&json).unwrap();
             match res {
-                Ok(()) => log!("success!"),
                 Err(v) => super::error_modal::show_error(v, &global_state),
+                _ => {}
             }
-
-            log!("{}", json);
-
-            //let cat_list = get_category_list().await;
-            //categories.1.set(cat_list);
         });
     };
 
@@ -55,7 +57,7 @@ pub fn Nav() -> impl IntoView {
                     <li class="nav-item">
                         <form on:submit=create_account>
                             <div class="form-group">
-                                <input class="form-control"/>
+                                <input class="form-control" node_ref=input_element/>
                             </div>
                         <button type="submit" class="btn btn-outline-secondary btn-sm">Add Account</button>
                         </form>

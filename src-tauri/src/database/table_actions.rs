@@ -34,7 +34,7 @@ impl TableActions for super::Category {
     }
 
     fn to_insert_data(&self) -> String {
-        return format!("{}", self.display_name);
+        return format!("'{}'", self.display_name);
     }
 }
 
@@ -51,14 +51,14 @@ impl TableActions for super::Account {
     }
 
     fn get_table_schema() -> String {
-        return "balance   INTEGER NOT NULL, dislay_name TEXT NOT NULL".to_string();
+        return "balance   INTEGER NOT NULL, display_name TEXT NOT NULL".to_string();
     }
 
     fn get_insert_schema() -> String {
-        return "balance display_name".to_string();
+        return "balance, display_name".to_string();
     }
 
     fn to_insert_data(&self) -> String {
-        return format!("{} {}", self.balance, self.display_name);
+        return format!("'{}', '{}'", self.balance, self.display_name);
     }
 }
