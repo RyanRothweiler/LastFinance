@@ -74,7 +74,7 @@ impl Database {
     pub fn get<T: TableActions>(&self, id: i64) -> T {
         let query = format!(
             "SELECT {} FROM {} WHERE ROWID={}",
-            T::get_insert_schema(),
+            T::get_fetch_schema(),
             T::get_table_name(),
             id
         );
@@ -87,7 +87,7 @@ impl Database {
     pub fn get_all<T: TableActions>(&self) -> Vec<T> {
         let query = format!(
             "SELECT {} FROM {}",
-            T::get_insert_schema(),
+            T::get_fetch_schema(),
             T::get_table_name(),
         );
 
@@ -153,10 +153,7 @@ impl Database {
     }
 
     pub fn create_account(&self, name: &str) -> Result<(), String> {
-        let res = self.insert(Account {
-            balance: 0,
-            display_name: name.to_string(),
-        });
+        let res = self.insert(Account::new(name));
         match res {
             Ok(()) => Ok(()),
             Err(t) => Err(format!("{}", t)),

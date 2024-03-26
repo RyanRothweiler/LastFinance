@@ -10,6 +10,7 @@ pub trait TableActions {
     fn get_table_name() -> String;
     fn get_table_schema() -> String;
     fn get_insert_schema() -> String;
+    fn get_fetch_schema() -> String;
     fn to_insert_data(&self) -> String;
     fn row_to_data(row: &Row) -> Self;
 }
@@ -33,6 +34,10 @@ impl TableActions for super::Category {
         return "display_name".to_string();
     }
 
+    fn get_fetch_schema() -> String {
+        return "display_name".to_string();
+    }
+
     fn to_insert_data(&self) -> String {
         return format!("'{}'", self.display_name);
     }
@@ -41,8 +46,9 @@ impl TableActions for super::Category {
 impl TableActions for super::Account {
     fn row_to_data(row: &Row) -> Self {
         Account {
-            balance: row.get(0).unwrap(),
-            display_name: row.get(1).unwrap(),
+            id: row.get(0).unwrap(),
+            balance: row.get(1).unwrap(),
+            display_name: row.get(2).unwrap(),
         }
     }
 
@@ -56,6 +62,10 @@ impl TableActions for super::Account {
 
     fn get_insert_schema() -> String {
         return "balance, display_name".to_string();
+    }
+
+    fn get_fetch_schema() -> String {
+        return "rowid, balance, display_name".to_string();
     }
 
     fn to_insert_data(&self) -> String {

@@ -89,12 +89,6 @@ pub fn App() -> impl IntoView {
         });
     };
 
-    let input_element: NodeRef<html::Input> = create_node_ref();
-    let submit_account = move |ev: SubmitEvent| {
-        ev.prevent_default();
-        let val = input_element.get().expect("heyo").value();
-    };
-
     view! {
         <html data-bs-theme="dark">
         <body>
@@ -103,49 +97,46 @@ pub fn App() -> impl IntoView {
 
                 <div class="row">
                     <nav::Nav/>
-                    <div class="col-md-9">
 
-                       <ul>
+                    <div class="col-md-10">
+
+                        <h1>
+                        Unassigned
+                        </h1>
+
+                        <h1>
+                        Categories
+                        </h1>
+
+
                         {
-                        move || {
-                            categories.0.get().categories.into_iter().map(
-                            |val| {
-                                view!{<li>{val.display_name}</li>}
+                            move || {
+                                categories.0.get().categories.into_iter().map(
+                                |val| {
+                                    view!{<li>{val.display_name}</li>}
+                                }
+                                ).collect_view()
                             }
-                            ).collect_view()
                         }
-                        }
-                        </ul>
 
-                        <div class="col">
-                            <form class="row" on:submit=greet>
-                                <input
-                                    id="greet-input"
-                                    placeholder="Enter a name..."
-                                    on:input=update_name
-                                />
-                                <button class="btn btn-primary" type="submit">"Add Category"</button>
-                            </form>
-                        </div>
-
-
-                        <div class="col">
-                            <form class="row" on:submit=submit_account>
-                            <input type="text"
+                        <form class="row row-cols-lg-auto" on:submit=greet>
+                            <div class="col-12">
+                            <input
+                                class="form-control"
+                                id="greet-input"
                                 placeholder="Enter a name..."
-                                node_ref=input_element
-                                />
+                                on:input=update_name
+                            />
+                            </div>
 
-                                <button class="btn btn-primary" type="submit">"Add Account"</button>
+                            <div class="col-12">
+                            <button class="btn btn-primary" type="submit">"Add Category"</button>
+                            </div>
 
-                            </form>
-                        </div>
+                        </form>
 
 
                         <div class="dropdown" data-bs-theme="dark">
-                          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButtonDark" data-bs-toggle="dropdown" aria-expanded="false">
-                            Dark dropdown
-                          </button>
                           <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonDark">
                             <li><a class="dropdown-item active" href="#">Action</a></li>
                             <li><a class="dropdown-item" href="#">Action</a></li>

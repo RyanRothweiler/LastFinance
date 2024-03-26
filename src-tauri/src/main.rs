@@ -50,6 +50,21 @@ fn create_account(name: &str, ts: tauri::State<State>) -> String {
 }
 
 #[tauri::command]
+fn fund_account(id: i64, cents: i64, ts: tauri::State<State>) -> String {
+    let conn_res = ts.db.lock();
+    let conn = match conn_res {
+        Ok(v) => v,
+        Err(v) => {
+            let ret: Result<(), String> = Result::Err("Error locking db.".to_string());
+            return serde_json::to_string(&ret).unwrap();
+        }
+    };
+
+    let res = conn.fund_account(cents, id);
+    return serde_json::to_string(&res).unwrap();
+}
+
+#[tauri::command]
 fn get_all_categories(ts: tauri::State<State>) -> String {
     let mut list: CategoryList = CategoryList { categories: vec![] };
     list.categories = ts.db.lock().unwrap().get_all::<Category>();
@@ -75,6 +90,7 @@ fn main() {
             create_account,
             get_all_categories,
             get_all_accounts,
+            fund_account,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

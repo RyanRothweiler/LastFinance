@@ -1,3 +1,4 @@
+use leptos::html::*;
 use leptos::leptos_dom::ev::SubmitEvent;
 use leptos::logging::*;
 use leptos::*;
@@ -62,6 +63,35 @@ pub fn Nav() -> impl IntoView {
         });
     };
 
+    let fund_account = move |account_id: i64| {
+        spawn_local(async move {
+            #[derive(Serialize, Deserialize)]
+            struct Args {
+                id: i64,
+                cents: i64,
+            }
+
+            let args = to_value(&Args {
+                id: account_id,
+                cents: 1000,
+            })
+            .unwrap();
+            let json = super::invoke("fund_account", args)
+                .await
+                .as_string()
+                .unwrap();
+
+            let res: Result<(), String> = serde_json::from_str(&json).unwrap();
+            match res {
+                Err(v) => super::error_modal::show_error(v, &global_state),
+                _ => {}
+            }
+
+            let account_list = get_account_list().await;
+            accounts.1.set(account_list);
+        });
+    };
+
     view! {
         <nav class="col-md-2 d-none d-md-block sidebar">
             <div class="sidebar-sticky">
@@ -81,21 +111,28 @@ pub fn Nav() -> impl IntoView {
                 move || {
                     accounts.0.get().accounts.into_iter().map(
                     |val| {
-                        view!{<li>{val.display_name} -> {val.balance}</li>}
+                        view!{
+                            <li>
+                                <h6>{val.display_name}</h6>
+                                <p>{data::cents_to_dollars(val.balance)}$
+                                <button type="submit" class="btn btn-outline-secondary btn-sm" on:click=move |_| {fund_account(val.id)}>fund</button>
+                                </p>
+                            </li>
+                        }
                     }
                     ).collect_view()
                 }
                 }
                 </ul>
 
- 
+
                 <ul class="nav flex-column">
                     <li class="nav-item">
                         <form on:submit=create_account>
                             <div class="form-group">
                                 <input class="form-control" node_ref=account_name_input/>
                             </div>
-                        <button type="submit" class="btn btn-outline-secondary btn-sm">Add Account</button>
+                            <button type="submit" class="btn btn-outline-secondary btn-sm">Add Account</button>
                         </form>
                     </li>
                 </ul>
