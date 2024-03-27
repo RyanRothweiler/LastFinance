@@ -10,18 +10,8 @@ use data::transaction::Transaction;
 mod table_actions;
 use table_actions::TableActions;
 
-macro_rules! function {
-    () => {{
-        fn f() {}
-        fn type_name_of<T>(_: T) -> &'static str {
-            std::any::type_name::<T>()
-        }
-        type_name_of(f)
-            .rsplit("::")
-            .find(|&part| part != "f" && part != "{{closure}}")
-            .expect("Short function name")
-    }};
-}
+#[cfg(test)]
+mod tests;
 
 pub struct Database {
     connection: Connection,
@@ -84,21 +74,15 @@ impl Database {
             .unwrap()
     }
 
-    pub fn get_all<T: TableActions>(&self) -> Result<Vec<T>, String> {
+    pub fn get_all<T: TableActions>(&self) -> Result<Vec<T>, rusqlite::Error> {
         let query = format!(
             "SELECT {} FROM {}",
             T::get_fetch_schema(),
             T::get_table_name(),
         );
 
-        let mut stmt = match self.connection.prepare(&query) {
-            Ok(v) => v,
-            Err(v) => return Result::Err(format!("{}", v)),
-        };
-        let mut iter = match stmt.query_map([], |row| Ok(T::row_to_data(row))) {
-            Ok(v) => v,
-            Err(v) => return Result::Err(format!("{}", v)),
-        };
+        let mut stmt = self.connection.prepare(&query)?;
+        let mut iter = stmt.query_map([], |row| Ok(T::row_to_data(row)))?;
 
         let mut ret: Vec<T> = vec![];
         for c in iter {
@@ -158,82 +142,19 @@ impl Database {
         Ok(())
     }
 
-    pub fn get_unassigned(&self) -> Result<f64, String> {
-        let accounts = self.get_all::<Account>().unwrap();
+    pub fn get_unassigned(&self) -> Result<i64, rusqlite::Error> {
+        let accounts = self.get_all::<Account>()?;
         let mut accounts_total = 0;
         for a in accounts {
             accounts_total += a.balance;
         }
 
-        let categories = self.get_all::<Category>().unwrap();
+        let categories = self.get_all::<Category>()?;
         let mut categories_total = 0;
         for c in categories {
             categories_total += c.balance;
         }
 
-        return Ok(1.0);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-
-    fn test_setup_db(name: &str) -> Database {
-        let db_dir = &format!("C:/Digital Archive/{}_db.db3", name);
-        let _ = std::fs::remove_file(db_dir);
-
-        let db = Database::new(db_dir);
-        return db;
-    }
-
-    fn test_remove_db(name: &str, db: Database) {
-        db.connection.close().unwrap();
-
-        let db_dir = format!("C:/Digital Archive/{}_db.db3", name);
-        std::fs::remove_file(db_dir).unwrap();
-    }
-
-    #[test]
-    fn database_setup() {
-        let db = test_setup_db(function!());
-        test_remove_db(function!(), db);
-    }
-
-    #[test]
-    fn insert_get() {
-        let db = test_setup_db(function!());
-        db.create_category("testing here").unwrap();
-
-        let cat_ret = db.get::<Category>(1);
-        assert_eq!(cat_ret, Category::new("testing here"));
-
-        test_remove_db(function!(), db);
-    }
-
-    #[test]
-    fn fund_get_ccount() {
-        let db = test_setup_db(function!());
-        db.create_account("Ryans Account").unwrap();
-        db.fund_account(data::dollars_to_cents(123.45), 1).unwrap();
-
-        let ac = db.get::<Account>(1);
-        assert_eq!(ac.balance, 12345);
-
-        test_remove_db(function!(), db);
-    }
-
-    #[test]
-    fn get_all_categories() {
-        let db = test_setup_db(function!());
-
-        db.create_category("first").unwrap();
-        db.create_category("second").unwrap();
-
-        let categories = db.get_all::<Category>().unwrap();
-        assert_eq!(categories.len(), 2);
-
-        test_remove_db(function!(), db);
+        return Ok(accounts_total - categories_total);
     }
 }
