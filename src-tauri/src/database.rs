@@ -84,22 +84,28 @@ impl Database {
             .unwrap()
     }
 
-    pub fn get_all<T: TableActions>(&self) -> Vec<T> {
+    pub fn get_all<T: TableActions>(&self) -> Result<Vec<T>, String> {
         let query = format!(
             "SELECT {} FROM {}",
             T::get_fetch_schema(),
             T::get_table_name(),
         );
 
-        let mut stmt = self.connection.prepare(&query).unwrap();
-        let iter = stmt.query_map([], |row| Ok(T::row_to_data(row))).unwrap();
+        let mut stmt = match self.connection.prepare(&query) {
+            Ok(v) => v,
+            Err(v) => return Result::Err(format!("{}", v)),
+        };
+        let mut iter = match stmt.query_map([], |row| Ok(T::row_to_data(row))) {
+            Ok(v) => v,
+            Err(v) => return Result::Err(format!("{}", v)),
+        };
 
         let mut ret: Vec<T> = vec![];
         for c in iter {
             ret.push(c.unwrap());
         }
 
-        return ret;
+        return Ok(ret);
     }
 
     fn table_exists(&self, table: &str) -> bool {
@@ -142,22 +148,30 @@ impl Database {
         Ok(())
     }
 
-    pub fn create_category(&self, name: &str) -> Result<(), String> {
-        let res = self.insert(Category {
-            display_name: name.to_string(),
-        });
-        match res {
-            Ok(()) => Ok(()),
-            Err(t) => Err(format!("{}", t)),
-        }
+    pub fn create_category(&self, name: &str) -> Result<(), rusqlite::Error> {
+        self.insert(Category::new(name))?;
+        Ok(())
     }
 
-    pub fn create_account(&self, name: &str) -> Result<(), String> {
-        let res = self.insert(Account::new(name));
-        match res {
-            Ok(()) => Ok(()),
-            Err(t) => Err(format!("{}", t)),
+    pub fn create_account(&self, name: &str) -> Result<(), rusqlite::Error> {
+        self.insert(Account::new(name))?;
+        Ok(())
+    }
+
+    pub fn get_unassigned(&self) -> Result<f64, String> {
+        let accounts = self.get_all::<Account>().unwrap();
+        let mut accounts_total = 0;
+        for a in accounts {
+            accounts_total += a.balance;
         }
+
+        let categories = self.get_all::<Category>().unwrap();
+        let mut categories_total = 0;
+        for c in categories {
+            categories_total += c.balance;
+        }
+
+        return Ok(1.0);
     }
 }
 
@@ -193,12 +207,7 @@ mod tests {
         db.create_category("testing here").unwrap();
 
         let cat_ret = db.get::<Category>(1);
-        assert_eq!(
-            cat_ret,
-            Category {
-                display_name: "testing here".to_string(),
-            }
-        );
+        assert_eq!(cat_ret, Category::new("testing here"));
 
         test_remove_db(function!(), db);
     }
@@ -222,7 +231,7 @@ mod tests {
         db.create_category("first").unwrap();
         db.create_category("second").unwrap();
 
-        let categories = db.get_all::<Category>();
+        let categories = db.get_all::<Category>().unwrap();
         assert_eq!(categories.len(), 2);
 
         test_remove_db(function!(), db);

@@ -21,7 +21,7 @@ async fn get_account_list() -> AccountList {
 }
 
 #[component]
-pub fn Nav() -> impl IntoView {
+pub fn Nav(unassigned_sig: WriteSignal<f64>) -> impl IntoView {
     let global_state = expect_context::<RwSignal<super::GlobalState>>();
 
     let accounts = create_signal::<AccountList>(AccountList::new());
@@ -89,6 +89,9 @@ pub fn Nav() -> impl IntoView {
 
             let account_list = get_account_list().await;
             accounts.1.set(account_list);
+
+            // update unassigned
+            //unassigned_sig.update(|count: &mut f64| *count += 1.0 );
         });
     };
 

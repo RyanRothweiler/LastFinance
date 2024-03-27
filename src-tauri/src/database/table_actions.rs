@@ -19,6 +19,7 @@ impl TableActions for super::Category {
     fn row_to_data(row: &Row) -> Self {
         Category {
             display_name: row.get(0).unwrap(),
+            balance: row.get(1).unwrap(),
         }
     }
 
@@ -27,19 +28,19 @@ impl TableActions for super::Category {
     }
 
     fn get_table_schema() -> String {
-        return "display_name   INTEGER NOT NULL".to_string();
+        return "display_name TEXT NOT NULL, balance INTEGER NOT NULL".to_string();
     }
 
     fn get_insert_schema() -> String {
-        return "display_name".to_string();
+        return "display_name, balance".to_string();
     }
 
     fn get_fetch_schema() -> String {
-        return "display_name".to_string();
+        return "display_name, balance".to_string();
     }
 
     fn to_insert_data(&self) -> String {
-        return format!("'{}'", self.display_name);
+        return format!("'{}', '{}'", self.display_name, self.balance);
     }
 }
 
@@ -57,7 +58,7 @@ impl TableActions for super::Account {
     }
 
     fn get_table_schema() -> String {
-        return "balance   INTEGER NOT NULL, display_name TEXT NOT NULL".to_string();
+        return "balance INTEGER NOT NULL, display_name TEXT NOT NULL".to_string();
     }
 
     fn get_insert_schema() -> String {
