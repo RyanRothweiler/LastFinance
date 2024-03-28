@@ -5,6 +5,7 @@ use rusqlite::{params, Connection, Result};
 use data::account::Account;
 use data::category::Category;
 use data::category::CategoryList;
+use data::category_transfer::CategoryTransfer;
 use data::transaction::Transaction;
 
 mod table_actions;
@@ -37,7 +38,7 @@ impl Database {
 
         setup_table::<Category>(&db);
         setup_table::<Account>(&db);
-        //setup_table::<Transaction>(&db);
+        setup_table::<CategoryTransfer>(&db);
 
         return db;
     }
