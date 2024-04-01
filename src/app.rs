@@ -17,6 +17,8 @@ use data::account::Account;
 use data::account::AccountList;
 use data::category::Category;
 use data::category::CategoryList;
+use data::transaction::Transaction;
+use data::transaction::TransactionList;
 
 #[wasm_bindgen]
 extern "C" {
@@ -48,6 +50,15 @@ async fn get_category_list() -> CategoryList {
     return list;
 }
 
+async fn get_transactions_list() -> TransactionList {
+    let json = invoke("get_all_transactions", JsValue::NULL)
+        .await
+        .as_string()
+        .unwrap();
+    let list: TransactionList = serde_json::from_str(&json).unwrap();
+    return list;
+}
+
 #[component]
 pub fn App() -> impl IntoView {
     provide_context(create_rw_signal(GlobalState::default()));
@@ -57,8 +68,17 @@ pub fn App() -> impl IntoView {
     create_resource(
         || (),
         move |_| async move {
-            let cat_list = get_category_list().await;
-            categories.1.set(cat_list);
+            let lst = get_category_list().await;
+            categories.1.set(lst);
+        },
+    );
+
+    let transactions = create_signal::<TransactionList>(TransactionList::new());
+    create_resource(
+        || (),
+        move |_| async move {
+            let lst = get_transactions_list().await;
+            transactions.1.set(lst);
         },
     );
 
@@ -86,8 +106,6 @@ pub fn App() -> impl IntoView {
             let args = to_value(&Args { name: &name }).unwrap();
             let json = invoke("create_category", args).await.as_string().unwrap();
 
-            log!("{json}");
-
             let res: Result<(), String> = serde_json::from_str(&json).unwrap();
             match res {
                 Err(v) => {
@@ -99,6 +117,60 @@ pub fn App() -> impl IntoView {
 
             let cat_list = get_category_list().await;
             categories.1.set(cat_list);
+        });
+    };
+
+    let create_transaction_payee_nr: NodeRef<html::Input> = create_node_ref();
+    let create_transaction_amount_nr: NodeRef<html::Input> = create_node_ref();
+    let create_transaction_date_nr: NodeRef<html::Input> = create_node_ref();
+    let create_transaction = move |ev: SubmitEvent| {
+        ev.prevent_default();
+        spawn_local(async move {
+            // parse amount
+            let amount: i64 = match create_transaction_amount_nr
+                .get()
+                .unwrap()
+                .value()
+                .parse::<i64>()
+            {
+                Ok(v) => v,
+                Err(v) => {
+                    error_modal::show_error(format!("Error parsing input. {:?}", v), &global_state);
+                    return;
+                }
+            };
+
+            #[derive(Serialize, Deserialize)]
+            struct Args {
+                trans: Transaction,
+            }
+
+            let args = to_value(&Args {
+                trans: Transaction::new(
+                    &create_transaction_payee_nr.get_untracked().unwrap().value(),
+                    amount,
+                    100,
+                    0,
+                ),
+            })
+            .unwrap();
+
+            let json = invoke("create_transaction", args)
+                .await
+                .as_string()
+                .unwrap();
+
+            let res: Result<(), String> = serde_json::from_str(&json).unwrap();
+            match res {
+                Err(v) => {
+                    error_modal::show_error(format!("{:?}", v), &global_state);
+                    log!("error!");
+                }
+                _ => {}
+            }
+
+            let lst = get_transactions_list().await;
+            transactions.1.set(lst);
         });
     };
 
@@ -114,16 +186,45 @@ pub fn App() -> impl IntoView {
                     <div class="col-md-10">
 
                         <h1>
-                            Unassigned
+                            Unassigned {unassigned}
                         </h1>
+
                         <h1>
-                            {unassigned}
+                            Transactions
                         </h1>
+                        {
+                            move || {
+                                transactions.0.get().transactions.into_iter().map(
+                                |val| {
+                                    view!{<li>{val.payee} {val.amount}</li>}
+                                }
+                                ).collect_view()
+                            }
+                        }
+
+
+                        <form class="row row-cols-lg-auto" on:submit=create_transaction>
+                            <div class="col-12">
+                            <input class="form-control" placeholder="Payee" node_ref=create_transaction_payee_nr/>
+                            </div>
+
+                            <div class="col-12">
+                            <input class="form-control" placeholder="Date" type="date" node_ref=create_transaction_date_nr/>
+                            </div>
+
+                            <div class="col-12">
+                            <input class="form-control" placeholder="Amount" type="number" node_ref=create_transaction_amount_nr/>
+                            </div>
+
+                            <div class="col-12">
+                            <button class="btn btn-primary" type="submit">"Add Transaction"</button>
+                            </div>
+
+                        </form>
 
                         <h1>
                             Categories
                         </h1>
-
 
                         {
                             move || {

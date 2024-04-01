@@ -6,6 +6,7 @@ use data::account::Account;
 use data::category::Category;
 use data::category::CategoryList;
 use data::category_transfer::CategoryTransfer;
+use data::transaction::Transaction;
 
 pub trait TableActions {
     fn get_table_name() -> String;
@@ -103,5 +104,40 @@ impl TableActions for super::CategoryTransfer {
 
     fn to_insert_data(&self) -> String {
         return format!("'{}', '{}', '{}'", self.source, self.dest, self.amount);
+    }
+}
+
+impl TableActions for Transaction {
+    fn row_to_data(row: &Row) -> Self {
+        Transaction {
+            payee: row.get(0).unwrap(),
+            amount: row.get(1).unwrap(),
+            date: row.get(2).unwrap(),
+            notes: row.get(3).unwrap(),
+            account_id: row.get(4).unwrap(),
+        }
+    }
+
+    fn get_table_name() -> String {
+        return "transactions".to_string();
+    }
+
+    fn get_table_schema() -> String {
+        return "payee TEXT NOT NULL, amount INTEGER NOT NULL, date INTEGER NOT NULL, notes TEXT NOT NULL, account_id INTEGER NOT NULL".to_string();
+    }
+
+    fn get_insert_schema() -> String {
+        return "payee, amount, date, notes, account_id".to_string();
+    }
+
+    fn get_fetch_schema() -> String {
+        return "payee, amount, date, notes, account_id".to_string();
+    }
+
+    fn to_insert_data(&self) -> String {
+        return format!(
+            "'{}', '{}', '{}', '{}', '{}'",
+            self.payee, self.amount, self.date, self.notes, self.account_id
+        );
     }
 }

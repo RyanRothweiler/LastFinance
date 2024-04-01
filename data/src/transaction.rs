@@ -2,48 +2,51 @@
 
 use serde::{Deserialize, Serialize};
 
+// a real life bank transaction
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Transaction {
-    source: i64,
-    dest: i64,
+    pub payee: String,
 
-    // amount is in minmum size of the currency (cents, pence)
-    amount: i64,
+    // unix timestamp
+    pub date: i64,
+
+    // negative is outflow, positive is inflow
+    pub amount: i64,
+
+    pub notes: String,
+
+    pub account_id: i64,
 }
-
-/*
-impl super::Table for Transaction {
-    fn get_table_name() -> String {
-        return "transactions".to_string();
-    }
-
-    fn get_table_schema() -> String {
-        return "source   INTEGER NOT NULL,
-            dest      INTEGER NOT NULL,
-            amount  INTEGER NOT NULL"
-            .to_string();
-    }
-
-    fn get_insert_schema() -> String {
-        return "source, dest, amount".to_string();
-    }
-
-    fn to_insert_data(&self) -> String {
-        todo!()
-    }
-}
-*/
 
 impl Transaction {
-    pub fn new(source: i64, dest: i64, amount: i64) -> Transaction {
+    pub fn new(payee: &str, amount: i64, date: i64, account_id: i64) -> Transaction {
         Transaction {
-            source,
-            dest,
+            payee: payee.to_string(),
             amount,
+            date,
+            account_id,
+            notes: "".to_string(),
         }
     }
 
     pub fn to_json_schema(&self) -> String {
+        return serde_json::to_string(self).unwrap();
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct TransactionList {
+    pub transactions: Vec<Transaction>,
+}
+
+impl TransactionList {
+    pub fn new() -> TransactionList {
+        TransactionList {
+            transactions: vec![],
+        }
+    }
+
+    pub fn to_json_string(&self) -> String {
         return serde_json::to_string(self).unwrap();
     }
 }

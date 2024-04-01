@@ -12,6 +12,8 @@ use data::account::Account;
 use data::account::AccountList;
 use data::category::Category;
 use data::category::CategoryList;
+use data::transaction::Transaction;
+use data::transaction::TransactionList;
 
 use database::Database;
 
@@ -62,6 +64,21 @@ fn create_account(name: &str, ts: tauri::State<State>) -> String {
 }
 
 #[tauri::command]
+fn create_transaction(trans: Transaction, ts: tauri::State<State>) -> String {
+    let conn_res = ts.db.lock();
+    let conn = match conn_res {
+        Ok(v) => v,
+        Err(v) => return build_error("Error locking db."),
+    };
+
+    match conn.insert(trans) {
+        Err(v) => return build_error(&format!("{:?}", v)),
+        _ => {}
+    };
+
+    return build_ok();
+}
+#[tauri::command]
 fn fund_account(id: i64, cents: i64, ts: tauri::State<State>) -> String {
     let conn_res = ts.db.lock();
     let conn = match conn_res {
@@ -97,6 +114,13 @@ fn get_all_accounts(ts: tauri::State<State>) -> String {
     return list.to_json_string();
 }
 
+#[tauri::command]
+fn get_all_transactions(ts: tauri::State<State>) -> String {
+    let mut list: TransactionList = TransactionList::new();
+    list.transactions = ts.db.lock().unwrap().get_all::<Transaction>().unwrap();
+    return list.to_json_string();
+}
+
 fn main() {
     let state = State {
         db: Mutex::new(Database::new("C:/Digital Archive/db.db3")),
@@ -107,8 +131,10 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             create_category,
             create_account,
+            create_transaction,
             get_all_categories,
             get_all_accounts,
+            get_all_transactions,
             fund_account,
             get_unassigned,
         ])

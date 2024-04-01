@@ -38,12 +38,13 @@ impl Database {
 
         setup_table::<Category>(&db);
         setup_table::<Account>(&db);
+        setup_table::<Transaction>(&db);
         setup_table::<CategoryTransfer>(&db);
 
         return db;
     }
 
-    fn insert<T: TableActions>(&self, data: T) -> Result<(), rusqlite::Error> {
+    pub fn insert<T: TableActions>(&self, data: T) -> Result<(), rusqlite::Error> {
         let mut query = String::new();
         query.push_str("INSERT INTO ");
         query.push_str(&T::get_table_name());
@@ -55,8 +56,6 @@ impl Database {
         query.push_str(" VALUES (");
         query.push_str(&data.to_insert_data());
         query.push_str(")");
-
-        println!("{query}");
 
         self.connection.execute(&query, ())?;
         Ok(())
