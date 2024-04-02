@@ -38,10 +38,11 @@ fn create_category(name: &str, ts: tauri::State<State>) -> String {
         Err(v) => return build_error("Error locking db."),
     };
 
-    match conn.create_category(name) {
+    let cat = Category::new(name);
+    match conn.insert(cat) {
         Err(v) => return build_error(&format!("{:?}", v)),
         _ => {}
-    }
+    };
 
     return build_ok();
 }
@@ -58,7 +59,7 @@ fn get_category_id(name: &str, ts: tauri::State<State>) -> String {
         Err(v) => {
             let ret: Result<i64, String> = Result::Err(format!("{:?}", v));
             return serde_json::to_string(&ret).unwrap();
-        },
+        }
         Ok(v) => {
             return serde_json::to_string(&v).unwrap();
         }
@@ -73,7 +74,8 @@ fn create_account(name: &str, ts: tauri::State<State>) -> String {
         Err(v) => return build_error("Error locking db."),
     };
 
-    match conn.create_account(name) {
+    let account = Account::new(name);
+    match conn.insert(account) {
         Err(v) => return build_error(&format!("{:?}", v)),
         _ => {}
     };
@@ -96,6 +98,7 @@ fn create_transaction(trans: Transaction, ts: tauri::State<State>) -> String {
 
     return build_ok();
 }
+
 #[tauri::command]
 fn fund_account(id: i64, cents: i64, ts: tauri::State<State>) -> String {
     let conn_res = ts.db.lock();

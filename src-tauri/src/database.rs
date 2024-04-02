@@ -160,16 +160,6 @@ impl Database {
         Ok(())
     }
 
-    pub fn create_category(&self, name: &str) -> Result<(), rusqlite::Error> {
-        self.insert(Category::new(name))?;
-        Ok(())
-    }
-
-    pub fn create_account(&self, name: &str) -> Result<(), rusqlite::Error> {
-        self.insert(Account::new(name))?;
-        Ok(())
-    }
-
     pub fn get_category_id(&self, name: &str) -> Result<i64, rusqlite::Error> {
         let query = format!("SELECT rowid FROM categories WHERE display_name='{name}'");
         let id: i64 = self

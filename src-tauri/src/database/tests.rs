@@ -37,7 +37,7 @@ fn database_setup() {
 #[test]
 fn insert_get() {
     let db = test_setup_db(function!());
-    db.create_category("testing here").unwrap();
+    db.insert(Category::new("testing here")).unwrap();
 
     let cat_ret = db.get::<Category>(1);
     assert_eq!(cat_ret, Category::new("testing here"));
@@ -48,7 +48,7 @@ fn insert_get() {
 #[test]
 fn fund_get_ccount() {
     let db = test_setup_db(function!());
-    db.create_account("Ryans Account").unwrap();
+    db.insert(Account::new("Ryans Account")).unwrap();
     db.fund_account(data::dollars_to_cents(123.45), 1).unwrap();
 
     let ac = db.get::<Account>(1);
@@ -61,8 +61,8 @@ fn fund_get_ccount() {
 fn get_all_categories() {
     let db = test_setup_db(function!());
 
-    db.create_category("first").unwrap();
-    db.create_category("second").unwrap();
+    db.insert(Category::new("first")).unwrap();
+    db.insert(Category::new("second")).unwrap();
 
     let categories = db.get_all::<Category>().unwrap();
     assert_eq!(categories.len(), 2);
@@ -74,8 +74,8 @@ fn get_all_categories() {
 fn get_category_id() {
     let db = test_setup_db(function!());
 
-    db.create_category("first").unwrap();
-    db.create_category("second").unwrap();
+    db.insert(Category::new("first")).unwrap();
+    db.insert(Category::new("second")).unwrap();
 
     assert_eq!(db.get_category_id("first"), Ok(1));
     assert_eq!(db.get_category_id("second"), Ok(2));
@@ -91,11 +91,11 @@ fn get_category_id() {
 fn get_unassigned() {
     let db = test_setup_db(function!());
 
-    db.create_account("first account").unwrap();
+    db.insert(Account::new("first account")).unwrap();
     db.fund_account(data::dollars_to_cents(100.0), 1).unwrap();
 
-    db.create_category("first").unwrap();
-    db.create_category("second").unwrap();
+    db.insert(Category::new("first")).unwrap();
+    db.insert(Category::new("second")).unwrap();
 
     let unassigned = db.get_unassigned().unwrap();
     assert_eq!(unassigned, data::dollars_to_cents(100.0));
@@ -107,8 +107,8 @@ fn get_unassigned() {
 fn get_transaction_list_display() {
     let db = test_setup_db(function!());
 
-    db.create_category("first").unwrap();
-    db.create_category("second").unwrap();
+    db.insert(Category::new("first")).unwrap();
+    db.insert(Category::new("second")).unwrap();
 
     let mut trans = Transaction::new("ryans transaction".to_string(), 100, 0, 0);
     trans.category_id = 1;
