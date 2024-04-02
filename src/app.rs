@@ -17,8 +17,7 @@ use data::account::Account;
 use data::account::AccountList;
 use data::category::Category;
 use data::category::CategoryList;
-use data::transaction::Transaction;
-use data::transaction::TransactionList;
+use data::transaction::*;
 
 #[wasm_bindgen]
 extern "C" {
@@ -50,12 +49,12 @@ async fn get_category_list() -> CategoryList {
     return list;
 }
 
-async fn get_transactions_list() -> TransactionList {
-    let json = invoke("get_all_transactions", JsValue::NULL)
+async fn get_transactions_list() -> TransactionDisplayList {
+    let json = invoke("get_all_transactions_display", JsValue::NULL)
         .await
         .as_string()
         .unwrap();
-    let list: TransactionList = serde_json::from_str(&json).unwrap();
+    let list: TransactionDisplayList = serde_json::from_str(&json).unwrap();
     return list;
 }
 
@@ -73,7 +72,7 @@ pub fn App() -> impl IntoView {
         },
     );
 
-    let transactions = create_signal::<TransactionList>(TransactionList::new());
+    let transactions = create_signal::<TransactionDisplayList>(TransactionDisplayList::new());
     create_resource(
         || (),
         move |_| async move {
@@ -207,9 +206,9 @@ pub fn App() -> impl IntoView {
                                     |val| {
                                         view!{
                                             <tr>
-                                                <th scope="row" style="width:50%">{val.payee}</th>
-                                                <td>category here</td>
-                                                <td>{val.amount}</td>
+                                                <th scope="row" style="width:50%">{val.trans_raw.payee}</th>
+                                                <td>{val.category_display}</td>
+                                                <td>{val.trans_raw.amount}</td>
                                             </tr>
                                         }
                                     }

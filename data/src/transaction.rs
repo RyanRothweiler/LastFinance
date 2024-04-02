@@ -72,3 +72,15 @@ impl TransactionDisplay {
 pub struct TransactionDisplayList {
     pub transactions: Vec<TransactionDisplay>,
 }
+
+impl TransactionDisplayList {
+    pub fn new() -> Self {
+        Self {
+            transactions: vec![],
+        }
+    }
+
+    pub fn to_json_string(&self) -> String {
+        return serde_json::to_string(self).unwrap();
+    }
+}

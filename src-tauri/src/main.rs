@@ -12,8 +12,7 @@ use data::account::Account;
 use data::account::AccountList;
 use data::category::Category;
 use data::category::CategoryList;
-use data::transaction::Transaction;
-use data::transaction::TransactionList;
+use data::transaction::*;
 
 use database::Database;
 
@@ -121,6 +120,11 @@ fn get_all_transactions(ts: tauri::State<State>) -> String {
     return list.to_json_string();
 }
 
+#[tauri::command]
+fn get_all_transactions_display(ts: tauri::State<State>) -> String {
+    let ret = ts.db.lock().unwrap().get_transaction_list_display().unwrap();
+    return ret.to_json_string();
+}
 fn main() {
     let state = State {
         db: Mutex::new(Database::new("C:/Digital Archive/db.db3")),
@@ -135,6 +139,7 @@ fn main() {
             get_all_categories,
             get_all_accounts,
             get_all_transactions,
+            get_all_transactions_display,
             fund_account,
             get_unassigned,
         ])
