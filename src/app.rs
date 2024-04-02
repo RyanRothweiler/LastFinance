@@ -139,20 +139,22 @@ pub fn App() -> impl IntoView {
                 }
             };
 
+            // parse category
+            //let category_id = 0;
+
+            let trans = Transaction::new(
+                create_transaction_payee_nr.get_untracked().unwrap().value(),
+                amount,
+                100,
+                0,
+            );
+
             #[derive(Serialize, Deserialize)]
             struct Args {
                 trans: Transaction,
             }
 
-            let args = to_value(&Args {
-                trans: Transaction::new(
-                    create_transaction_payee_nr.get_untracked().unwrap().value(),
-                    amount,
-                    100,
-                    0,
-                ),
-            })
-            .unwrap();
+            let args = to_value(&Args { trans: trans }).unwrap();
 
             let json = invoke("create_transaction", args)
                 .await

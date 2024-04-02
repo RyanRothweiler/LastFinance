@@ -47,6 +47,25 @@ fn create_category(name: &str, ts: tauri::State<State>) -> String {
 }
 
 #[tauri::command]
+fn get_category_id(name: &str, ts: tauri::State<State>) -> String {
+    let conn_res = ts.db.lock();
+    let conn = match conn_res {
+        Ok(v) => v,
+        Err(v) => return build_error("Error locking db."),
+    };
+
+    match conn.get_category_id(name) {
+        Err(v) => {
+            let ret: Result<i64, String> = Result::Err(format!("{:?}", v));
+            return serde_json::to_string(&ret).unwrap();
+        },
+        Ok(v) => {
+            return serde_json::to_string(&v).unwrap();
+        }
+    };
+}
+
+#[tauri::command]
 fn create_account(name: &str, ts: tauri::State<State>) -> String {
     let conn_res = ts.db.lock();
     let conn = match conn_res {
@@ -122,7 +141,12 @@ fn get_all_transactions(ts: tauri::State<State>) -> String {
 
 #[tauri::command]
 fn get_all_transactions_display(ts: tauri::State<State>) -> String {
-    let ret = ts.db.lock().unwrap().get_transaction_list_display().unwrap();
+    let ret = ts
+        .db
+        .lock()
+        .unwrap()
+        .get_transaction_list_display()
+        .unwrap();
     return ret.to_json_string();
 }
 fn main() {
@@ -142,6 +166,7 @@ fn main() {
             get_all_transactions_display,
             fund_account,
             get_unassigned,
+            get_category_id,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

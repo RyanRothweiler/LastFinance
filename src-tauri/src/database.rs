@@ -170,6 +170,14 @@ impl Database {
         Ok(())
     }
 
+    pub fn get_category_id(&self, name: &str) -> Result<i64, rusqlite::Error> {
+        let query = format!("SELECT rowid FROM categories WHERE display_name='{name}'");
+        let id: i64 = self
+            .connection
+            .query_row(&query, [], |row| Ok(row.get(0)?))?;
+        Ok(id)
+    }
+
     pub fn get_unassigned(&self) -> Result<i64, rusqlite::Error> {
         let accounts = self.get_all::<Account>()?;
         let mut accounts_total = 0;

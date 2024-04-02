@@ -71,6 +71,23 @@ fn get_all_categories() {
 }
 
 #[test]
+fn get_category_id() {
+    let db = test_setup_db(function!());
+
+    db.create_category("first").unwrap();
+    db.create_category("second").unwrap();
+
+    assert_eq!(db.get_category_id("first"), Ok(1));
+    assert_eq!(db.get_category_id("second"), Ok(2));
+    assert_eq!(
+        db.get_category_id("what??"),
+        Err(rusqlite::Error::QueryReturnedNoRows)
+    );
+
+    test_remove_db(function!(), db);
+}
+
+#[test]
 fn get_unassigned() {
     let db = test_setup_db(function!());
 
@@ -102,7 +119,10 @@ fn get_transaction_list_display() {
 
     let transaction_displays = db.get_transaction_list_display().unwrap();
     assert_eq!(transaction_displays.transactions.len(), 2);
-    assert_eq!(transaction_displays.transactions[0].category_display, "first");
+    assert_eq!(
+        transaction_displays.transactions[0].category_display,
+        "first"
+    );
     assert_eq!(transaction_displays.transactions[0].trans_raw.amount, 100);
     assert_eq!(transaction_displays.transactions[1].category_display, "");
     assert_eq!(transaction_displays.transactions[1].trans_raw.amount, 1);
