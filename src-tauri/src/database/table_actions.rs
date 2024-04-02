@@ -115,6 +115,7 @@ impl TableActions for Transaction {
             date: row.get(2).unwrap(),
             notes: row.get(3).unwrap(),
             account_id: row.get(4).unwrap(),
+            category_id: row.get(5).unwrap(),
         }
     }
 
@@ -123,21 +124,21 @@ impl TableActions for Transaction {
     }
 
     fn get_table_schema() -> String {
-        return "payee TEXT NOT NULL, amount INTEGER NOT NULL, date INTEGER NOT NULL, notes TEXT NOT NULL, account_id INTEGER NOT NULL".to_string();
+        return "payee TEXT NOT NULL, amount INTEGER NOT NULL, date INTEGER NOT NULL, notes TEXT NOT NULL, account_id INTEGER NOT NULL, category_id INTEGER NOT NULL".to_string();
     }
 
     fn get_insert_schema() -> String {
-        return "payee, amount, date, notes, account_id".to_string();
+        return "payee, amount, date, notes, account_id, category_id".to_string();
     }
 
     fn get_fetch_schema() -> String {
-        return "payee, amount, date, notes, account_id".to_string();
+        return "payee, amount, date, notes, account_id, category_id".to_string();
     }
 
     fn to_insert_data(&self) -> String {
         return format!(
-            "'{}', '{}', '{}', '{}', '{}'",
-            self.payee, self.amount, self.date, self.notes, self.account_id
+            "'{}', '{}', '{}', '{}', '{}', '{}'",
+            self.payee, self.amount, self.date, self.notes, self.account_id, self.category_id
         );
     }
 }

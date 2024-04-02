@@ -6,25 +6,25 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Transaction {
     pub payee: String,
+    pub notes: String,
+    pub account_id: i64,
+    pub category_id: i64,
 
     // unix timestamp
     pub date: i64,
 
     // negative is outflow, positive is inflow
     pub amount: i64,
-
-    pub notes: String,
-
-    pub account_id: i64,
 }
 
 impl Transaction {
-    pub fn new(payee: &str, amount: i64, date: i64, account_id: i64) -> Transaction {
+    pub fn new(payee: String, amount: i64, date: i64, account_id: i64) -> Transaction {
         Transaction {
-            payee: payee.to_string(),
+            payee: payee,
             amount,
             date,
             account_id,
+            category_id: 0,
             notes: "".to_string(),
         }
     }
@@ -49,4 +49,26 @@ impl TransactionList {
     pub fn to_json_string(&self) -> String {
         return serde_json::to_string(self).unwrap();
     }
+}
+
+// Transaction data for displaying to user
+// ids are resolved, etc
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct TransactionDisplay {
+    pub trans_raw: Transaction,
+    pub category_display: String,
+}
+
+impl TransactionDisplay {
+    pub fn new(trans_raw: Transaction, category_display: String) -> TransactionDisplay {
+        TransactionDisplay {
+            trans_raw,
+            category_display,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct TransactionDisplayList {
+    pub transactions: Vec<TransactionDisplay>,
 }

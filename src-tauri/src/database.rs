@@ -6,7 +6,7 @@ use data::account::Account;
 use data::category::Category;
 use data::category::CategoryList;
 use data::category_transfer::CategoryTransfer;
-use data::transaction::Transaction;
+use data::transaction::*;
 
 mod table_actions;
 use table_actions::TableActions;
@@ -113,6 +113,34 @@ impl Database {
             return true;
         }
         return false;
+    }
+
+    pub fn get_transaction_list_display(&self) -> Result<TransactionDisplayList, rusqlite::Error> {
+        let query = "SELECT 
+                            payee, 
+                            amount, 
+                            date, 
+                            account_id,
+                            ifnull(categories.display_name, '') as category_display_name
+                    from transactions 
+                    left join categories on transactions.category_id = categories.ROWID";
+
+        let mut stmt = self.connection.prepare(query)?;
+        let mut iter = stmt.query_map([], |row| {
+            Ok(TransactionDisplay {
+                trans_raw: Transaction::new(row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?),
+                category_display: row.get(4).unwrap(),
+            })
+        })?;
+
+        let mut ret = TransactionDisplayList {
+            transactions: vec![],
+        };
+        for c in iter {
+            ret.transactions.push(c.unwrap());
+        }
+
+        Ok(ret)
     }
 
     // adds to the amount in the account

@@ -147,7 +147,7 @@ pub fn App() -> impl IntoView {
 
             let args = to_value(&Args {
                 trans: Transaction::new(
-                    &create_transaction_payee_nr.get_untracked().unwrap().value(),
+                    create_transaction_payee_nr.get_untracked().unwrap().value(),
                     amount,
                     100,
                     0,
@@ -192,28 +192,48 @@ pub fn App() -> impl IntoView {
                         <h1>
                             Transactions
                         </h1>
-                        {
-                            move || {
-                                transactions.0.get().transactions.into_iter().map(
-                                |val| {
-                                    view!{<li>{val.payee} {val.amount}</li>}
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Payee</th>
+                                    <th scope="col">Category</th>
+                                    <th scope="col">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {
+                                move || {
+                                    transactions.0.get().transactions.into_iter().map(
+                                    |val| {
+                                        view!{
+                                            <tr>
+                                                <th scope="row" style="width:50%">{val.payee}</th>
+                                                <td>category here</td>
+                                                <td>{val.amount}</td>
+                                            </tr>
+                                        }
+                                    }
+                                    ).collect_view()
                                 }
-                                ).collect_view()
                             }
-                        }
-
+                            </tbody>
+                        </table>
 
                         <form class="row row-cols-lg-auto" on:submit=create_transaction>
                             <div class="col-12">
-                            <input class="form-control" placeholder="Payee" node_ref=create_transaction_payee_nr/>
+                                <input class="form-control" placeholder="Payee" node_ref=create_transaction_payee_nr/>
                             </div>
 
                             <div class="col-12">
-                            <input class="form-control" placeholder="Date" type="date" node_ref=create_transaction_date_nr/>
+                                <input class="form-control" placeholder="Date" type="date" node_ref=create_transaction_date_nr/>
                             </div>
 
                             <div class="col-12">
-                            <input class="form-control" placeholder="Amount" type="number" node_ref=create_transaction_amount_nr/>
+                                <input class="form-control" placeholder="Amount" type="number" node_ref=create_transaction_amount_nr/>
+                            </div>
+
+                            <div class="col-12">
+                                <input class="form-control" placeholder="Category"/>
                             </div>
 
                             <div class="col-12">

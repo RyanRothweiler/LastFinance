@@ -85,3 +85,27 @@ fn get_unassigned() {
 
     test_remove_db(function!(), db);
 }
+
+#[test]
+fn get_transaction_list_display() {
+    let db = test_setup_db(function!());
+
+    db.create_category("first").unwrap();
+    db.create_category("second").unwrap();
+
+    let mut trans = Transaction::new("ryans transaction".to_string(), 100, 0, 0);
+    trans.category_id = 1;
+    db.insert(trans).unwrap();
+
+    let mut trans = Transaction::new("ryans second transaction".to_string(), 1, 0, 0);
+    db.insert(trans).unwrap();
+
+    let transaction_displays = db.get_transaction_list_display().unwrap();
+    assert_eq!(transaction_displays.transactions.len(), 2);
+    assert_eq!(transaction_displays.transactions[0].category_display, "first");
+    assert_eq!(transaction_displays.transactions[0].trans_raw.amount, 100);
+    assert_eq!(transaction_displays.transactions[1].category_display, "");
+    assert_eq!(transaction_displays.transactions[1].trans_raw.amount, 1);
+
+    test_remove_db(function!(), db);
+}
