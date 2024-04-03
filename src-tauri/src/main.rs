@@ -13,6 +13,7 @@ use data::account::AccountList;
 use data::category::Category;
 use data::category::CategoryList;
 use data::transaction::*;
+use data::ResultWrapped;
 
 use database::Database;
 
@@ -31,126 +32,146 @@ fn build_ok() -> String {
 }
 
 #[tauri::command]
-fn create_category(name: &str, ts: tauri::State<State>) -> String {
-    let conn_res = ts.db.lock();
-    let conn = match conn_res {
+fn create_category(name: &str, ts: tauri::State<State>) -> ResultWrapped<(), String> {
+    let conn = match ts.db.lock() {
         Ok(v) => v,
-        Err(v) => return build_error("Error locking db."),
+        Err(v) => return ResultWrapped::error("Error locking database".to_string()),
     };
 
     let cat = Category::new(name);
     match conn.insert(cat) {
-        Err(v) => return build_error(&format!("{:?}", v)),
+        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
         _ => {}
     };
 
-    return build_ok();
+    ResultWrapped::ok(())
 }
 
 #[tauri::command]
-fn get_category_id(name: &str, ts: tauri::State<State>) -> String {
-    let conn_res = ts.db.lock();
-    let conn = match conn_res {
+fn get_category_id(name: &str, ts: tauri::State<State>) -> ResultWrapped<i64, String> {
+    let conn = match ts.db.lock() {
         Ok(v) => v,
-        Err(v) => return build_error("Error locking db."),
+        Err(v) => return ResultWrapped::error("Error locking db.".to_string()),
     };
 
     match conn.get_category_id(name) {
-        Err(v) => {
-            let ret: Result<i64, String> = Result::Err(format!("{:?}", v));
-            return serde_json::to_string(&ret).unwrap();
-        }
-        Ok(v) => {
-            return serde_json::to_string(&v).unwrap();
-        }
+        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
+        Ok(v) => return ResultWrapped::ok(v),
     };
 }
 
 #[tauri::command]
-fn create_account(name: &str, ts: tauri::State<State>) -> String {
-    let conn_res = ts.db.lock();
-    let conn = match conn_res {
+fn create_account(name: &str, ts: tauri::State<State>) -> ResultWrapped<(), String> {
+    let conn = match ts.db.lock() {
         Ok(v) => v,
-        Err(v) => return build_error("Error locking db."),
+        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
     };
 
     let account = Account::new(name);
     match conn.insert(account) {
-        Err(v) => return build_error(&format!("{:?}", v)),
+        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
         _ => {}
     };
 
-    return build_ok();
+    return ResultWrapped::ok(());
 }
 
 #[tauri::command]
-fn create_transaction(trans: Transaction, ts: tauri::State<State>) -> String {
-    let conn_res = ts.db.lock();
-    let conn = match conn_res {
+fn create_transaction(trans: Transaction, ts: tauri::State<State>) -> ResultWrapped<(), String> {
+    let conn = match ts.db.lock() {
         Ok(v) => v,
-        Err(v) => return build_error("Error locking db."),
+        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
     };
 
     match conn.insert(trans) {
-        Err(v) => return build_error(&format!("{:?}", v)),
+        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
         _ => {}
     };
 
-    return build_ok();
+    ResultWrapped::ok(())
 }
 
 #[tauri::command]
-fn fund_account(id: i64, cents: i64, ts: tauri::State<State>) -> String {
-    let conn_res = ts.db.lock();
-    let conn = match conn_res {
+fn fund_account(id: i64, cents: i64, ts: tauri::State<State>) -> ResultWrapped<(), String> {
+    let conn = match ts.db.lock() {
         Ok(v) => v,
-        Err(v) => return build_error("Error locking db."),
+        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
     };
 
     match conn.fund_account(cents, id) {
-        Err(v) => return build_error(&format!("{:?}", v)),
+        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
         _ => {}
     };
 
-    return build_ok();
+    ResultWrapped::ok(())
 }
 
 #[tauri::command]
-fn get_unassigned(ts: tauri::State<State>) -> String {
-    let ret: Result<f64, String> = Result::Ok(100.5);
-    return serde_json::to_string(&ret).unwrap();
+fn get_unassigned(ts: tauri::State<State>) -> ResultWrapped<f64, String> {
+    return ResultWrapped::ok(100.5);
 }
 
 #[tauri::command]
-fn get_all_categories(ts: tauri::State<State>) -> String {
+fn get_all_categories(ts: tauri::State<State>) -> ResultWrapped<CategoryList, String> {
+    let conn = match ts.db.lock() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
+    };
+
     let mut list: CategoryList = CategoryList { categories: vec![] };
-    list.categories = ts.db.lock().unwrap().get_all::<Category>().unwrap();
-    return list.to_json_string();
+    list.categories = match conn.get_all::<Category>() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
+    };
+
+    ResultWrapped::ok(list)
 }
 
 #[tauri::command]
-fn get_all_accounts(ts: tauri::State<State>) -> String {
+fn get_all_accounts(ts: tauri::State<State>) -> ResultWrapped<AccountList, String> {
+    let conn = match ts.db.lock() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
+    };
+
     let mut list: AccountList = AccountList::new();
-    list.accounts = ts.db.lock().unwrap().get_all::<Account>().unwrap();
-    return list.to_json_string();
+    list.accounts = match conn.get_all::<Account>() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
+    };
+    ResultWrapped::ok(list)
 }
 
 #[tauri::command]
-fn get_all_transactions(ts: tauri::State<State>) -> String {
+fn get_all_transactions(ts: tauri::State<State>) -> ResultWrapped<TransactionList, String> {
+    let conn = match ts.db.lock() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
+    };
+
     let mut list: TransactionList = TransactionList::new();
-    list.transactions = ts.db.lock().unwrap().get_all::<Transaction>().unwrap();
-    return list.to_json_string();
+    list.transactions = match conn.get_all::<Transaction>() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
+    };
+    ResultWrapped::ok(list)
 }
 
 #[tauri::command]
-fn get_all_transactions_display(ts: tauri::State<State>) -> String {
-    let ret = ts
-        .db
-        .lock()
-        .unwrap()
-        .get_transaction_list_display()
-        .unwrap();
-    return ret.to_json_string();
+fn get_all_transactions_display(
+    ts: tauri::State<State>,
+) -> ResultWrapped<TransactionDisplayList, String> {
+    let conn = match ts.db.lock() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
+    };
+
+    let ret = match conn.get_transaction_list_display() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
+    };
+
+    ResultWrapped::ok(ret)
 }
 fn main() {
     let state = State {

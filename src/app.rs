@@ -8,8 +8,7 @@ use leptos::logging::*;
 use leptos::*;
 
 use serde::{Deserialize, Serialize};
-use serde_json;
-use serde_wasm_bindgen::to_value;
+use serde_wasm_bindgen::{from_value, to_value};
 
 use wasm_bindgen::prelude::*;
 
@@ -18,6 +17,7 @@ use data::account::AccountList;
 use data::category::Category;
 use data::category::CategoryList;
 use data::transaction::*;
+use data::ResultWrapped;
 
 #[wasm_bindgen]
 extern "C" {
@@ -41,21 +41,15 @@ struct GlobalState {
 }
 
 async fn get_category_list() -> CategoryList {
-    let json = invoke("get_all_categories", JsValue::NULL)
-        .await
-        .as_string()
-        .unwrap();
-    let list: CategoryList = serde_json::from_str(&json).unwrap();
-    return list;
+    let ret_js: JsValue = invoke("get_all_categories", JsValue::NULL).await;
+    let ret: ResultWrapped<CategoryList, String> = from_value(ret_js).unwrap();
+    return ret.res.unwrap();
 }
 
 async fn get_transactions_list() -> TransactionDisplayList {
-    let json = invoke("get_all_transactions_display", JsValue::NULL)
-        .await
-        .as_string()
-        .unwrap();
-    let list: TransactionDisplayList = serde_json::from_str(&json).unwrap();
-    return list;
+    let ret_js: JsValue = invoke("get_all_transactions_display", JsValue::NULL).await;
+    let ret: ResultWrapped<TransactionDisplayList, String> = from_value(ret_js).unwrap();
+    return ret.res.unwrap();
 }
 
 #[component]
@@ -103,14 +97,11 @@ pub fn App() -> impl IntoView {
             }
 
             let args = to_value(&Args { name: &name }).unwrap();
-            let json = invoke("create_category", args).await.as_string().unwrap();
+            let ret_js: JsValue = invoke("create_category", args).await;
+            let ret: ResultWrapped<(), String> = from_value(ret_js).unwrap();
 
-            let res: Result<(), String> = serde_json::from_str(&json).unwrap();
-            match res {
-                Err(v) => {
-                    error_modal::show_error(format!("{:?}", v), &global_state);
-                    log!("error!");
-                }
+            match ret.res {
+                Err(v) => error_modal::show_error(v, &global_state),
                 _ => {}
             }
 
@@ -156,17 +147,10 @@ pub fn App() -> impl IntoView {
 
             let args = to_value(&Args { trans: trans }).unwrap();
 
-            let json = invoke("create_transaction", args)
-                .await
-                .as_string()
-                .unwrap();
-
-            let res: Result<(), String> = serde_json::from_str(&json).unwrap();
-            match res {
-                Err(v) => {
-                    error_modal::show_error(format!("{:?}", v), &global_state);
-                    log!("error!");
-                }
+            let ret_js: JsValue = invoke("create_transaction", args).await;
+            let ret: ResultWrapped<(), String> = from_value(ret_js).unwrap();
+            match ret.res {
+                Err(v) => error_modal::show_error(format!("{:?}", v), &global_state),
                 _ => {}
             }
 

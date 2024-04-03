@@ -6,18 +6,15 @@ use leptos::*;
 use wasm_bindgen::prelude::*;
 
 use serde::{Deserialize, Serialize};
-use serde_json;
-use serde_wasm_bindgen::to_value;
+use serde_wasm_bindgen::{from_value, to_value};
 
 use data::account::AccountList;
+use data::ResultWrapped;
 
 async fn get_account_list() -> AccountList {
-    let json = super::invoke("get_all_accounts", JsValue::NULL)
-        .await
-        .as_string()
-        .unwrap();
-    let list: AccountList = serde_json::from_str(&json).unwrap();
-    return list;
+    let ret_js: JsValue = super::invoke("get_all_accounts", JsValue::NULL).await;
+    let ret: ResultWrapped<AccountList, String> = from_value(ret_js).unwrap();
+    return ret.res.unwrap();
 }
 
 #[component]
@@ -47,13 +44,9 @@ pub fn Nav(unassigned_sig: WriteSignal<f64>) -> impl IntoView {
                 name: &account_name_input.get().unwrap().value(),
             })
             .unwrap();
-            let json = super::invoke("create_account", args)
-                .await
-                .as_string()
-                .unwrap();
-
-            let res: Result<(), String> = serde_json::from_str(&json).unwrap();
-            match res {
+            let ret_js = super::invoke("create_account", args).await;
+            let ret: ResultWrapped<(), String> = from_value(ret_js).unwrap();
+            match ret.res {
                 Err(v) => super::error_modal::show_error(v, &global_state),
                 _ => {}
             }
@@ -76,13 +69,9 @@ pub fn Nav(unassigned_sig: WriteSignal<f64>) -> impl IntoView {
                 cents: 1000,
             })
             .unwrap();
-            let json = super::invoke("fund_account", args)
-                .await
-                .as_string()
-                .unwrap();
-
-            let res: Result<(), String> = serde_json::from_str(&json).unwrap();
-            match res {
+            let ret_js = super::invoke("fund_account", args).await;
+            let ret: ResultWrapped<(), String> = from_value(ret_js).unwrap();
+            match ret.res {
                 Err(v) => super::error_modal::show_error(v, &global_state),
                 _ => {}
             }
