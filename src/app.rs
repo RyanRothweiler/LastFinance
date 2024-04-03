@@ -1,4 +1,4 @@
-#![allow(unused_variables, unused_imports, dead_code)]
+#![allow(unused_variables, unused_imports, dead_code, unused_assignments)]
 
 mod error_modal;
 mod nav;
@@ -113,6 +113,7 @@ pub fn App() -> impl IntoView {
     let create_transaction_payee_nr: NodeRef<html::Input> = create_node_ref();
     let create_transaction_amount_nr: NodeRef<html::Input> = create_node_ref();
     let create_transaction_date_nr: NodeRef<html::Input> = create_node_ref();
+    let create_transaction_category_nr: NodeRef<html::Input> = create_node_ref();
     let create_transaction = move |ev: SubmitEvent| {
         ev.prevent_default();
         spawn_local(async move {
@@ -130,15 +131,36 @@ pub fn App() -> impl IntoView {
                 }
             };
 
-            // parse category
-            //let category_id = 0;
-
-            let trans = Transaction::new(
+            let mut trans = Transaction::new(
                 create_transaction_payee_nr.get_untracked().unwrap().value(),
                 amount,
                 100,
                 0,
             );
+
+            // get category id from name
+            {
+                #[derive(Serialize, Deserialize)]
+                struct CategoryArgs<'a> {
+                    name: &'a str,
+                }
+                let args = to_value(&CategoryArgs {
+                    name: &create_transaction_category_nr.get().unwrap().value(),
+                })
+                .unwrap();
+                let ret_js: JsValue = invoke("get_category_id", args).await;
+                let ret: ResultWrapped<i64, String> = from_value(ret_js).unwrap();
+                match ret.res {
+                    Ok(v) => trans.category_id = v,
+                    Err(v) => {
+                        error_modal::show_error(
+                            "No category with that name.".to_string(),
+                            &global_state,
+                        );
+                        return;
+                    }
+                }
+            }
 
             #[derive(Serialize, Deserialize)]
             struct Args {
@@ -218,7 +240,7 @@ pub fn App() -> impl IntoView {
                             </div>
 
                             <div class="col-12">
-                                <input class="form-control" placeholder="Category"/>
+                                <input class="form-control" placeholder="Category" node_ref=create_transaction_category_nr/>
                             </div>
 
                             <div class="col-12">

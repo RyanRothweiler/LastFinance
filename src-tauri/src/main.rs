@@ -55,8 +55,8 @@ fn get_category_id(name: &str, ts: tauri::State<State>) -> ResultWrapped<i64, St
     };
 
     match conn.get_category_id(name) {
-        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
         Ok(v) => return ResultWrapped::ok(v),
+        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
     };
 }
 
