@@ -69,22 +69,34 @@ pub fn Home() -> impl IntoView {
 
     view! {
         <h1>
-            Unassigned {unassigned}
+            "Categories"
         </h1>
 
-        <h1>
-            Categories
-        </h1>
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th scope="col">Category</th>
+                    <th scope="col">Available</th>
+                </tr>
+            </thead>
+            <tbody>
+            {
+                move || {
+                    categories.0.get().categories.into_iter().map(
+                    |val| {
+                        view!{
+                            <tr>
+                                <td scope="row">{val.display_name}</td>
+                                <td>{val.balance}</td>
+                            </tr>
+                        }
 
-        {
-            move || {
-                categories.0.get().categories.into_iter().map(
-                |val| {
-                    view!{<li>{val.display_name}</li>}
+                    }
+                    ).collect_view()
                 }
-                ).collect_view()
             }
-        }
+            </tbody>
+        </table>
 
         <form class="row row-cols-lg-auto" on:submit=create_category>
             <div class="col-12">

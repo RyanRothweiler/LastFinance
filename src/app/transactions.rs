@@ -121,7 +121,7 @@ pub fn Transactions() -> impl IntoView {
                     |val| {
                         view!{
                             <tr>
-                                <th scope="row" style="width:50%">{val.trans_raw.payee}</th>
+                                <td scope="row" style="width:50%">{val.trans_raw.payee}</td>
                                 <td>{val.category_display}</td>
                                 <td>{val.trans_raw.amount}</td>
                             </tr>
