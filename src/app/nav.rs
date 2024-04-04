@@ -18,7 +18,7 @@ async fn get_account_list() -> AccountList {
 }
 
 #[component]
-pub fn Nav(unassigned_sig: WriteSignal<f64>) -> impl IntoView {
+pub fn Nav() -> impl IntoView {
     let global_state = expect_context::<RwSignal<super::GlobalState>>();
 
     let accounts = create_signal::<AccountList>(AccountList::new());
@@ -90,7 +90,7 @@ pub fn Nav(unassigned_sig: WriteSignal<f64>) -> impl IntoView {
             <div class="sidebar-sticky">
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link" href="/">"Dashboard"</a>
+                        <a class="nav-link" href="/">"Budget"</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/transactions">"Transactions"</a>
