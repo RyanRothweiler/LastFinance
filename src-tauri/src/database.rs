@@ -3,8 +3,7 @@
 use rusqlite::{params, Connection, Result};
 
 use data::account::Account;
-use data::category::Category;
-use data::category::CategoryList;
+use data::category::*;
 use data::category_transfer::CategoryTransfer;
 use data::transaction::*;
 
@@ -182,5 +181,32 @@ impl Database {
         }
 
         return Ok(accounts_total - categories_total);
+    }
+
+    pub fn get_category_display_list(&self) -> Result<Vec<CategoryDisplay>, rusqlite::Error> {
+        let query = "SELECT 
+                category_id,
+                display_name,
+	              sum(amount) as total
+            FROM transactions 
+            left join categories on transactions.category_id = categories.rowid
+            WHERE not transactions.category_id = 0
+            GROUP BY category_id";
+
+        let mut stmt = self.connection.prepare(query)?;
+        let mut iter = stmt.query_map([], |row| {
+            Ok(CategoryDisplay {
+                category_id: row.get(0)?,
+                display_name: row.get(1)?,
+                balance: row.get(2)?,
+            })
+        })?;
+
+        let mut ret: Vec<CategoryDisplay> = vec![];
+        for c in iter {
+            ret.push(c.unwrap());
+        }
+
+        Ok(ret)
     }
 }

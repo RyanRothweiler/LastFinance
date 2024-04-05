@@ -35,3 +35,10 @@ impl CategoryList {
         return serde_json::to_string(self).unwrap();
     }
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct CategoryDisplay {
+    pub category_id: i64,
+    pub display_name: String,
+    pub balance: i64,
+}

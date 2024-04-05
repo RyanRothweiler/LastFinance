@@ -129,3 +129,39 @@ fn get_transaction_list_display() {
 
     test_remove_db(function!(), db);
 }
+
+#[test]
+fn get_category_display_list() {
+    let db = test_setup_db(function!());
+
+    db.insert(Category::new("first")).unwrap();
+    db.insert(Category::new("second")).unwrap();
+
+    let mut trans = Transaction::new("ryans transaction".to_string(), 5, 0, 0);
+    db.insert(trans).unwrap();
+
+    let mut trans = Transaction::new("ryans transaction".to_string(), 100, 0, 0);
+    trans.category_id = 1;
+    db.insert(trans).unwrap();
+
+    let mut trans = Transaction::new("ryans transaction".to_string(), 1000, 0, 0);
+    trans.category_id = 1;
+    db.insert(trans).unwrap();
+
+    let mut trans = Transaction::new("ryans second transaction".to_string(), 1, 0, 0);
+    trans.category_id = 2;
+    db.insert(trans).unwrap();
+
+    let mut trans = Transaction::new("ryans second transaction".to_string(), -10, 0, 0);
+    trans.category_id = 2;
+    db.insert(trans).unwrap();
+
+    let category_displays = db.get_category_display_list().unwrap();
+    assert_eq!(category_displays.len(), 2);
+    assert_eq!(category_displays[0].display_name, "first");
+    assert_eq!(category_displays[0].balance, 1100);
+    assert_eq!(category_displays[1].display_name, "second");
+    assert_eq!(category_displays[1].balance, -9);
+
+    test_remove_db(function!(), db);
+}
