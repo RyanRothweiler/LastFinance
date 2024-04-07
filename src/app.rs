@@ -48,7 +48,6 @@ pub fn App() -> impl IntoView {
 
     view! {
         <html data-bs-theme="dark">
-        <body>
         <main>
         <Router>
 
@@ -72,7 +71,6 @@ pub fn App() -> impl IntoView {
 
         </Router>
         </main>
-        </body>
         </html>
     }
 }

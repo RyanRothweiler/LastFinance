@@ -85,18 +85,16 @@ pub fn Nav() -> impl IntoView {
     };
 
     view! {
-        <nav class="col-md-2 d-none d-md-block sidebar">
+        <nav class="col-md-2 d-none d-md-block sidebar px-4 py-2 bg-dark-subtle">
+
+            <h3 class="text-secondary">Last Finance</h3>
 
             <div class="sidebar-sticky">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">"Budget"</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/transactions">"Transactions"</a>
-                    </li>
-
+                <ul class="nav flex-column py-2">
+                    <button class="nav-item gy-2" type="button" class="btn btn-dark" href="/">Budget</button>
+                    <button class="nav-item gy-2" type="button" class="btn btn-dark" href="/transactions">Transactions</button>
                 </ul>
+
                 <h6 class="sidebar-heading text-muted justify-content-between aign-items-center">Accounts</h6>
 
                 <ul class="nav flex-column">

@@ -14,12 +14,8 @@ use data::transaction::*;
 use data::ResultWrapped;
 
 async fn get_category_list() -> Vec<CategoryDisplay> {
-    log!("here?");
     let ret_js: JsValue = super::invoke("get_category_display_list", JsValue::NULL).await;
-
-    log!("ret");
     let ret: ResultWrapped<Vec<CategoryDisplay>, String> = from_value(ret_js).unwrap();
-    log!("parsed");
     return ret.res.unwrap();
 }
 
