@@ -13,9 +13,13 @@ use data::category::*;
 use data::transaction::*;
 use data::ResultWrapped;
 
-async fn get_category_list() -> CategoryList {
-    let ret_js: JsValue = super::invoke("get_all_categories", JsValue::NULL).await;
-    let ret: ResultWrapped<CategoryList, String> = from_value(ret_js).unwrap();
+async fn get_category_list() -> Vec<CategoryDisplay> {
+    log!("here?");
+    let ret_js: JsValue = super::invoke("get_category_display_list", JsValue::NULL).await;
+
+    log!("ret");
+    let ret: ResultWrapped<Vec<CategoryDisplay>, String> = from_value(ret_js).unwrap();
+    log!("parsed");
     return ret.res.unwrap();
 }
 
@@ -23,7 +27,7 @@ async fn get_category_list() -> CategoryList {
 pub fn Home() -> impl IntoView {
     let global_state = expect_context::<RwSignal<super::GlobalState>>();
 
-    let categories = create_signal::<CategoryList>(CategoryList::new());
+    let categories = create_signal::<Vec<CategoryDisplay>>(vec![]);
     create_resource(
         || (),
         move |_| async move {
@@ -76,18 +80,18 @@ pub fn Home() -> impl IntoView {
             <thead>
                 <tr>
                     <th scope="col">Category</th>
-                    <th scope="col">Available</th>
+                    <th scope="col">Activity</th>
                 </tr>
             </thead>
             <tbody>
             {
                 move || {
-                    categories.0.get().categories.into_iter().map(
+                    categories.0.get().into_iter().map(
                     |val| {
                         view!{
                             <tr>
                                 <td scope="row">{val.display_name}</td>
-                                <td>{val.balance}</td>
+                                <td>{val.transaction_total}</td>
                             </tr>
                         }
 

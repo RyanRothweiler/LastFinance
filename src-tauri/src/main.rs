@@ -10,8 +10,7 @@ use rusqlite::{params, Connection, Result};
 
 use data::account::Account;
 use data::account::AccountList;
-use data::category::Category;
-use data::category::CategoryList;
+use data::category::*;
 use data::transaction::*;
 use data::ResultWrapped;
 
@@ -173,6 +172,25 @@ fn get_all_transactions_display(
 
     ResultWrapped::ok(ret)
 }
+
+#[tauri::command]
+fn get_category_display_list(
+    ts: tauri::State<State>,
+) -> ResultWrapped<Vec<CategoryDisplay>, String> {
+
+    let conn = match ts.db.lock() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
+    };
+
+    let ret = match conn.get_category_display_list() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
+    };
+
+    ResultWrapped::ok(ret)
+}
+
 fn main() {
     let state = State {
         db: Mutex::new(Database::new("C:/Digital Archive/db.db3")),
@@ -191,6 +209,7 @@ fn main() {
             fund_account,
             get_unassigned,
             get_category_id,
+            get_category_display_list,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

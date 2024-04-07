@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 pub struct Category {
     pub display_name: String,
     pub balance: i64,
+    pub id: i64,
 }
 
 impl Category {
@@ -13,6 +14,7 @@ impl Category {
         Category {
             display_name: name.to_string(),
             balance: 0,
+            id: 0,
         }
     }
 
@@ -40,5 +42,5 @@ impl CategoryList {
 pub struct CategoryDisplay {
     pub category_id: i64,
     pub display_name: String,
-    pub balance: i64,
+    pub transaction_total: i64,
 }

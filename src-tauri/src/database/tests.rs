@@ -40,7 +40,11 @@ fn insert_get() {
     db.insert(Category::new("testing here")).unwrap();
 
     let cat_ret = db.get::<Category>(1);
-    assert_eq!(cat_ret, Category::new("testing here"));
+
+    let mut cat_real = Category::new("testing here");
+    cat_real.id = 1;
+
+    assert_eq!(cat_ret, cat_real);
 
     test_remove_db(function!(), db);
 }
@@ -136,6 +140,7 @@ fn get_category_display_list() {
 
     db.insert(Category::new("first")).unwrap();
     db.insert(Category::new("second")).unwrap();
+    db.insert(Category::new("third")).unwrap();
 
     let mut trans = Transaction::new("ryans transaction".to_string(), 5, 0, 0);
     db.insert(trans).unwrap();
@@ -157,11 +162,17 @@ fn get_category_display_list() {
     db.insert(trans).unwrap();
 
     let category_displays = db.get_category_display_list().unwrap();
-    assert_eq!(category_displays.len(), 2);
+
+    assert_eq!(category_displays.len(), 3);
+
     assert_eq!(category_displays[0].display_name, "first");
-    assert_eq!(category_displays[0].balance, 1100);
+    assert_eq!(category_displays[0].transaction_total, 1100);
+
     assert_eq!(category_displays[1].display_name, "second");
-    assert_eq!(category_displays[1].balance, -9);
+    assert_eq!(category_displays[1].transaction_total, -9);
+
+    assert_eq!(category_displays[2].display_name, "third");
+    assert_eq!(category_displays[2].transaction_total, 0);
 
     test_remove_db(function!(), db);
 }

@@ -22,6 +22,7 @@ impl TableActions for super::Category {
         Category {
             display_name: row.get(0).unwrap(),
             balance: row.get(1).unwrap(),
+            id: row.get(2).unwrap(),
         }
     }
 
@@ -30,7 +31,8 @@ impl TableActions for super::Category {
     }
 
     fn get_table_schema() -> String {
-        return "display_name TEXT NOT NULL, balance INTEGER NOT NULL".to_string();
+        return "display_name TEXT NOT NULL, balance INTEGER NOT NULL, id INTEGER primary key autoincrement"
+            .to_string();
     }
 
     fn get_insert_schema() -> String {
@@ -38,7 +40,7 @@ impl TableActions for super::Category {
     }
 
     fn get_fetch_schema() -> String {
-        return "display_name, balance".to_string();
+        return "display_name, balance, id".to_string();
     }
 
     fn to_insert_data(&self) -> String {

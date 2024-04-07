@@ -184,21 +184,23 @@ impl Database {
     }
 
     pub fn get_category_display_list(&self) -> Result<Vec<CategoryDisplay>, rusqlite::Error> {
-        let query = "SELECT 
-                category_id,
+        let query = "
+            SELECT 
+                id, 
                 display_name,
-	              sum(amount) as total
-            FROM transactions 
-            left join categories on transactions.category_id = categories.rowid
-            WHERE not transactions.category_id = 0
-            GROUP BY category_id";
+                COALESCE(sum(amount), 0) as transactions_total
+            from categories 
+            left join transactions on transactions.category_id = categories.rowid
+            group by id
+            order by id
+            ";
 
         let mut stmt = self.connection.prepare(query)?;
         let mut iter = stmt.query_map([], |row| {
             Ok(CategoryDisplay {
                 category_id: row.get(0)?,
                 display_name: row.get(1)?,
-                balance: row.get(2)?,
+                transaction_total: row.get(2)?,
             })
         })?;
 
