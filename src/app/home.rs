@@ -9,116 +9,121 @@ use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::{from_value, to_value};
 
 use crate::app::error_modal;
-use data::category::*;
-use data::transaction::*;
+use data::account::*;
 use data::ResultWrapped;
 
-async fn get_category_list() -> Vec<CategoryDisplay> {
-    let ret_js: JsValue = super::invoke("get_category_display_list", JsValue::NULL).await;
-    let ret: ResultWrapped<Vec<CategoryDisplay>, String> = from_value(ret_js).unwrap();
+async fn get_account_list() -> AccountList {
+    let ret_js: JsValue = super::invoke("get_all_accounts", JsValue::NULL).await;
+    let ret: ResultWrapped<AccountList, String> = from_value(ret_js).unwrap();
     return ret.res.unwrap();
 }
 
 #[component]
 pub fn Home() -> impl IntoView {
+
     let global_state = expect_context::<RwSignal<super::GlobalState>>();
 
-    let categories = create_signal::<Vec<CategoryDisplay>>(vec![]);
-    create_resource(
+    let accounts = create_signal::<AccountList>(AccountList::new());
+    let account_res = create_resource(
         || (),
         move |_| async move {
-            let lst = get_category_list().await;
-            categories.1.set(lst);
+            let list = get_account_list().await;
+            accounts.1.set(list);
         },
     );
 
-    let (unassigned, unassigned_set) = create_signal(100.0);
+    let account_name_input: NodeRef<html::Input> = create_node_ref();
 
-    let (name, set_name) = create_signal(String::new());
-    let update_name = move |ev| {
-        let v = event_target_value(&ev);
-        set_name.set(v);
-    };
-
-    let create_category = move |ev: SubmitEvent| {
+    let create_account = move |ev: SubmitEvent| {
         ev.prevent_default();
         spawn_local(async move {
-            let name = name.get_untracked();
-            if name.is_empty() {
-                return;
-            }
-
             #[derive(Serialize, Deserialize)]
             struct Args<'a> {
                 name: &'a str,
             }
 
-            let args = to_value(&Args { name: &name }).unwrap();
-            let ret_js: JsValue = super::invoke("create_category", args).await;
+            let args = to_value(&Args {
+                name: &account_name_input.get().unwrap().value(),
+            })
+            .unwrap();
+            let ret_js = super::invoke("create_account", args).await;
             let ret: ResultWrapped<(), String> = from_value(ret_js).unwrap();
-
             match ret.res {
-                Err(v) => error_modal::show_error(v, &global_state),
+                Err(v) => super::error_modal::show_error(v, &global_state),
                 _ => {}
             }
 
-            let cat_list = get_category_list().await;
-            categories.1.set(cat_list);
+            let account_list = get_account_list().await;
+            accounts.1.set(account_list);
+        });
+    };
+
+    let fund_account = move |account_id: i64| {
+        spawn_local(async move {
+            #[derive(Serialize, Deserialize)]
+            struct Args {
+                id: i64,
+                cents: i64,
+            }
+
+            let args = to_value(&Args {
+                id: account_id,
+                cents: 1000,
+            })
+            .unwrap();
+            let ret_js = super::invoke("fund_account", args).await;
+            let ret: ResultWrapped<(), String> = from_value(ret_js).unwrap();
+            match ret.res {
+                Err(v) => super::error_modal::show_error(v, &global_state),
+                _ => {}
+            }
+
+            let account_list = get_account_list().await;
+            accounts.1.set(account_list);
+
+            // update unassigned
+            //unassigned_sig.update(|count: &mut f64| *count += 1.0 );
         });
     };
 
     view! {
         <h1>
-            "Categories"
+            "Home"
         </h1>
 
-        <table class="table table-sm">
-            <thead>
-                <tr>
-                    <th scope="col">Category</th>
-                    <th scope="col">Activity</th>
-                </tr>
-            </thead>
-            <tbody>
-            {
-                move || {
-                    categories.0.get().into_iter().map(
-                    |val| {
-                        view!{
-                            <tr>
-                                <td scope="row">{val.display_name}</td>
-                                <td>{val.transaction_total}</td>
-                            </tr>
-                        }
+        <h3>
+            "Accounts"
+        </h3>
 
-                    }
-                    ).collect_view()
+        <ul class="nav flex-column">
+        {
+        move || {
+            accounts.0.get().accounts.into_iter().map(
+            |val| {
+                view!{
+                    <li>
+                        <h6>{val.display_name}</h6>
+                        <p>{data::cents_to_dollars(val.balance)}$
+                        <button type="submit" class="btn btn-outline-secondary btn-sm" on:click=move |_| {fund_account(val.id)}>fund</button>
+                        </p>
+                    </li>
                 }
             }
-            </tbody>
-        </table>
-
-        <form class="row row-cols-lg-auto" on:submit=create_category>
-            <div class="col-12">
-            <input
-                class="form-control"
-                placeholder="Enter a name..."
-                on:input=update_name
-            />
-            </div>
-
-            <div class="col-12">
-            <button class="btn btn-primary" type="submit">"Add Category"</button>
-            </div>
-
-        </form>
+            ).collect_view()
+        }
+        }
+        </ul>
 
 
-        <div class="dropdown" data-bs-theme="dark">
-          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonDark">
-            <li><a class="dropdown-item active" href="#">Action</a></li>
-            <li><a class="dropdown-item" href="#">Action</a></li>
-          </ul>
-        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <form on:submit=create_account>
+                    <div class="form-group">
+                        <input class="form-control" node_ref=account_name_input/>
+                    </div>
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">Add Account</button>
+                </form>
+            </li>
+        </ul>
     }
 }

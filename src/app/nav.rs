@@ -89,7 +89,10 @@ pub fn Nav() -> impl IntoView {
             <div class="container-fluid justify-content-center">
                 <ul class="nav justify-content-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="/">Budget</a>
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">Categories</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/transactions">Transactions</a>

@@ -4,6 +4,7 @@ mod error_modal;
 mod home;
 mod nav;
 mod transactions;
+mod categories;
 
 use leptos::leptos_dom::ev::SubmitEvent;
 use leptos::logging::*;
@@ -60,6 +61,7 @@ pub fn App() -> impl IntoView {
                         <Routes>
                             <Route path="/" view=home::Home/>
                             <Route path="/transactions" view=transactions::Transactions/>
+                            <Route path="/categories" view=categories::Categories/>
                         </Routes>
 
                        <error_modal::ErrorModal/>
