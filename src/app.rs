@@ -56,7 +56,7 @@ pub fn App() -> impl IntoView {
                 <div class="row">
                     <nav::Nav/>
 
-                    <div class="col-md-10">
+                    <div class="p-5">
                         <Routes>
                             <Route path="/" view=home::Home/>
                             <Route path="/transactions" view=transactions::Transactions/>

@@ -85,46 +85,14 @@ pub fn Nav() -> impl IntoView {
     };
 
     view! {
-        <nav class="col-md-2 d-none d-md-block sidebar px-4 py-2 bg-dark-subtle">
-
-            <h3 class="text-secondary">Last Finance</h3>
-
-            <div class="sidebar-sticky">
-                <ul class="nav flex-column py-2">
-                    <button class="nav-item gy-2" type="button" class="btn btn-dark" href="/">Budget</button>
-                    <button class="nav-item gy-2" type="button" class="btn btn-dark" href="/transactions">Transactions</button>
-                </ul>
-
-                <h6 class="sidebar-heading text-muted justify-content-between aign-items-center">Accounts</h6>
-
-                <ul class="nav flex-column">
-                {
-                move || {
-                    accounts.0.get().accounts.into_iter().map(
-                    |val| {
-                        view!{
-                            <li>
-                                <h6>{val.display_name}</h6>
-                                <p>{data::cents_to_dollars(val.balance)}$
-                                <button type="submit" class="btn btn-outline-secondary btn-sm" on:click=move |_| {fund_account(val.id)}>fund</button>
-                                </p>
-                            </li>
-                        }
-                    }
-                    ).collect_view()
-                }
-                }
-                </ul>
-
-
-                <ul class="nav flex-column">
+        <nav class="navbar navbar-expand-lg bg-body-tertiary">
+            <div class="container-fluid justify-content-center">
+                <ul class="nav justify-content-center">
                     <li class="nav-item">
-                        <form on:submit=create_account>
-                            <div class="form-group">
-                                <input class="form-control" node_ref=account_name_input/>
-                            </div>
-                            <button type="submit" class="btn btn-outline-secondary btn-sm">Add Account</button>
-                        </form>
+                        <a class="nav-link" href="/">Budget</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/transactions">Transactions</a>
                     </li>
                 </ul>
             </div>
