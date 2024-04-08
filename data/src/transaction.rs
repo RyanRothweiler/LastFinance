@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 // a real life bank transaction
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct Transaction {
     pub payee: String,
     pub notes: String,
@@ -18,7 +18,38 @@ pub struct Transaction {
 }
 
 impl Transaction {
-    pub fn new(payee: String, amount: i64, date: i64, account_id: i64) -> Transaction {
+    pub fn new(
+        payee: String,
+        inflow: i64,
+        outflow: i64,
+        date: i64,
+        account_id: i64,
+    ) -> Result<Transaction, String> {
+        if outflow != 0 && inflow != 0 {
+            return Err("Cannot create transaction with both inflow and outflow.".to_string());
+        }
+        if outflow == 0 && inflow == 0 {
+            return Err("Cannot create transaction with no outflow and no inflow.".to_string());
+        }
+
+        let mount: i64;
+        if outflow > 0 {
+            mount = -outflow;
+        } else {
+            mount = inflow;
+        }
+
+        Ok(Transaction {
+            payee: payee,
+            amount: mount,
+            date,
+            account_id,
+            category_id: 0,
+            notes: "".to_string(),
+        })
+    }
+
+    pub fn new_amount(payee: String, amount: i64, date: i64, account_id: i64) -> Transaction {
         Transaction {
             payee: payee,
             amount,
@@ -83,4 +114,12 @@ impl TransactionDisplayList {
     pub fn to_json_string(&self) -> String {
         return serde_json::to_string(self).unwrap();
     }
+}
+
+#[test]
+fn transaction_new_outflow_and_inflow() {
+    assert_eq!(
+        Transaction::new("payee".to_string(), 10, 10, 0, 0),
+        Err("Cannot create transaction with both inflow and outflow.".to_string())
+    );
 }

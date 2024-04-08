@@ -32,32 +32,40 @@ pub fn Transactions() -> impl IntoView {
     );
 
     let create_transaction_payee_nr: NodeRef<html::Input> = create_node_ref();
-    let create_transaction_amount_nr: NodeRef<html::Input> = create_node_ref();
     let create_transaction_date_nr: NodeRef<html::Input> = create_node_ref();
     let create_transaction_category_nr: NodeRef<html::Input> = create_node_ref();
+
+    let (outflow_get, outflow_set) = create_signal("".to_string());
+    let (inflow_get, inflow_set) = create_signal("".to_string());
+
     let create_transaction = move |ev: SubmitEvent| {
         ev.prevent_default();
         spawn_local(async move {
             // parse amount
-            let amount: i64 = match create_transaction_amount_nr
-                .get()
-                .unwrap()
-                .value()
-                .parse::<i64>()
-            {
+            let outflow: i64 = match outflow_get.get().parse::<i64>() {
+                Ok(v) => v,
+                Err(v) => 0,
+            };
+
+            // parse amount
+            let inflow: i64 = match inflow_get.get().parse::<i64>() {
+                Ok(v) => v,
+                Err(v) => 0,
+            };
+
+            let mut trans = match Transaction::new(
+                create_transaction_payee_nr.get_untracked().unwrap().value(),
+                inflow,
+                outflow,
+                100,
+                0,
+            ) {
                 Ok(v) => v,
                 Err(v) => {
-                    error_modal::show_error(format!("Error parsing input. {:?}", v), &global_state);
+                    error_modal::show_error(v, &global_state);
                     return;
                 }
             };
-
-            let mut trans = Transaction::new(
-                create_transaction_payee_nr.get_untracked().unwrap().value(),
-                amount,
-                100,
-                0,
-            );
 
             // get category id from name
             {
@@ -111,7 +119,8 @@ pub fn Transactions() -> impl IntoView {
                 <tr>
                     <th scope="col">Payee</th>
                     <th scope="col">Category</th>
-                    <th scope="col">Amount</th>
+                    <th scope="col">Outflow</th>
+                    <th scope="col">Inflow</th>
                 </tr>
             </thead>
             <tbody>
@@ -119,11 +128,20 @@ pub fn Transactions() -> impl IntoView {
                 move || {
                     transactions.0.get().transactions.into_iter().map(
                     |val| {
+                        let mut outflow: String = "".to_string();
+                        let mut inflow: String = "".to_string();
+                        if val.trans_raw.amount > 0 {
+                            inflow = format!("{:?}", val.trans_raw.amount);
+                        } else {
+                            outflow = format!("{:?}", -val.trans_raw.amount);
+                        }
+
                         view!{
                             <tr>
-                                <td scope="row" style="width:50%">{val.trans_raw.payee}</td>
+                                <td style="width:50%">{val.trans_raw.payee}</td>
                                 <td>{val.category_display}</td>
-                                <td>{val.trans_raw.amount}</td>
+                                <td style="width:5%">{outflow}</td>
+                                <td style="width:5%">{inflow}</td>
                             </tr>
                         }
                     }
@@ -142,7 +160,23 @@ pub fn Transactions() -> impl IntoView {
             </div>
 
             <div class="col-12">
-                <input class="form-control" placeholder="Amount" type="number" node_ref=create_transaction_amount_nr/>
+                <input class="form-control" placeholder="Outflow" type="number"
+                    on:input=move |ev| {
+                        outflow_set.set(event_target_value(&ev));
+                        inflow_set.set("".to_string());
+                    }
+                    prop:value = outflow_get
+                />
+            </div>
+
+            <div class="col-12">
+                <input class="form-control" placeholder="Inflow" type="number"
+                    on:input=move |ev| {
+                        inflow_set.set(event_target_value(&ev));
+                        outflow_set.set("".to_string());
+                    }
+                    prop:value=inflow_get
+                />
             </div>
 
             <div class="col-12">
