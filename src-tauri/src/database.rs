@@ -127,7 +127,7 @@ impl Database {
         let mut stmt = self.connection.prepare(query)?;
         let mut iter = stmt.query_map([], |row| {
             Ok(TransactionDisplay {
-                trans_raw: Transaction::new_amount(
+                trans_raw: Transaction::new_raw(
                     row.get(0)?,
                     row.get(1)?,
                     row.get(2)?,

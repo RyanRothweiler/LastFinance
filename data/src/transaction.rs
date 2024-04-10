@@ -49,7 +49,8 @@ impl Transaction {
         })
     }
 
-    pub fn new_amount(payee: String, amount: i64, date: i64, account_id: i64) -> Transaction {
+    // no validation on input
+    pub fn new_raw(payee: String, amount: i64, date: i64, account_id: i64) -> Transaction {
         Transaction {
             payee: payee,
             amount,

@@ -1,3 +1,6 @@
+use time::format_description::well_known::Iso8601;
+use time::PrimitiveDateTime;
+
 use leptos::html::*;
 use leptos::leptos_dom::ev::SubmitEvent;
 use leptos::logging::*;
@@ -53,11 +56,25 @@ pub fn Transactions() -> impl IntoView {
                 Err(v) => 0,
             };
 
+            // parse date
+            // convert date to unix timestamp
+            let mut date_val: String = create_transaction_date_nr.get_untracked().unwrap().value();
+            date_val.push_str("T00:00:00");
+            let date = match PrimitiveDateTime::parse(&date_val, &Iso8601::DEFAULT) {
+                Ok(v) => v,
+                Err(v) => {
+                    error_modal::show_error("Error parsing date".to_string(), &global_state);
+                    return;
+                }
+            };
+            let unix_date = date.assume_utc().unix_timestamp();
+
+            // create transaction
             let mut trans = match Transaction::new(
                 create_transaction_payee_nr.get_untracked().unwrap().value(),
                 inflow,
                 outflow,
-                100,
+                unix_date,
                 0,
             ) {
                 Ok(v) => v,
@@ -118,6 +135,7 @@ pub fn Transactions() -> impl IntoView {
             <thead>
                 <tr>
                     <th scope="col">Payee</th>
+                    <th scope="col">Date</th>
                     <th scope="col">Category</th>
                     <th scope="col">Outflow</th>
                     <th scope="col">Inflow</th>
@@ -128,17 +146,30 @@ pub fn Transactions() -> impl IntoView {
                 move || {
                     transactions.0.get().transactions.into_iter().map(
                     |val| {
-                        let mut outflow: String = "".to_string();
-                        let mut inflow: String = "".to_string();
+                        let mut outflow = String::new();
+                        let mut inflow = String::new();
                         if val.trans_raw.amount > 0 {
                             inflow = format!("{:?}", val.trans_raw.amount);
                         } else {
                             outflow = format!("{:?}", -val.trans_raw.amount);
                         }
 
+                        let mut date = String::new();
+                        match  time::OffsetDateTime::from_unix_timestamp(val.trans_raw.date) {
+                            Ok(v) => {
+                                // Unwrap safe here, these formats are always known. Incorrect
+                                // format is programmer error.
+                                let format_desc = time::format_description::parse("[year]-[month]-[day]").unwrap();
+                                date = v.format(&format_desc).unwrap();
+                                //date = v.to_string(),
+                            }
+                            _ => {}
+                        }
+
                         view!{
                             <tr>
                                 <td style="width:50%">{val.trans_raw.payee}</td>
+                                <td>{date}</td>
                                 <td>{val.category_display}</td>
                                 <td style="width:5%">{outflow}</td>
                                 <td style="width:5%">{inflow}</td>

@@ -114,11 +114,11 @@ fn get_transaction_list_display() {
     db.insert(Category::new("first")).unwrap();
     db.insert(Category::new("second")).unwrap();
 
-    let mut trans = Transaction::new_amount("ryans transaction".to_string(), 100, 0, 0);
+    let mut trans = Transaction::new_raw("ryans transaction".to_string(), 100, 0, 0);
     trans.category_id = 1;
     db.insert(trans).unwrap();
 
-    let mut trans = Transaction::new_amount("ryans second transaction".to_string(), 1, 0, 0);
+    let mut trans = Transaction::new_raw("ryans second transaction".to_string(), 1, 0, 0);
     db.insert(trans).unwrap();
 
     let transaction_displays = db.get_transaction_list_display().unwrap();
@@ -142,22 +142,22 @@ fn get_category_display_list() {
     db.insert(Category::new("second")).unwrap();
     db.insert(Category::new("third")).unwrap();
 
-    let mut trans = Transaction::new_amount("ryans transaction".to_string(), 5, 0, 0);
+    let mut trans = Transaction::new_raw("ryans transaction".to_string(), 5, 0, 0);
     db.insert(trans).unwrap();
 
-    let mut trans = Transaction::new_amount("ryans transaction".to_string(), 100, 0, 0);
+    let mut trans = Transaction::new_raw("ryans transaction".to_string(), 100, 0, 0);
     trans.category_id = 1;
     db.insert(trans).unwrap();
 
-    let mut trans = Transaction::new_amount("ryans transaction".to_string(), 1000, 0, 0);
+    let mut trans = Transaction::new_raw("ryans transaction".to_string(), 1000, 0, 0);
     trans.category_id = 1;
     db.insert(trans).unwrap();
 
-    let mut trans = Transaction::new_amount("ryans second transaction".to_string(), 1, 0, 0);
+    let mut trans = Transaction::new_raw("ryans second transaction".to_string(), 1, 0, 0);
     trans.category_id = 2;
     db.insert(trans).unwrap();
 
-    let mut trans = Transaction::new_amount("ryans second transaction".to_string(), -10, 0, 0);
+    let mut trans = Transaction::new_raw("ryans second transaction".to_string(), -10, 0, 0);
     trans.category_id = 2;
     db.insert(trans).unwrap();
 
