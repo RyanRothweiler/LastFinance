@@ -67,58 +67,96 @@ pub fn Categories() -> impl IntoView {
         });
     };
 
+    let (category_id_selected, category_id_selected_set) = create_signal(0);
+
     view! {
         <h1>
             "Categories"
         </h1>
 
-        <table class="table table-sm">
-            <thead>
-                <tr>
-                    <th scope="col">Category</th>
-                    <th scope="col">Activity</th>
-                </tr>
-            </thead>
-            <tbody>
-            {
-                move || {
-                    categories.0.get().into_iter().map(
-                    |val| {
-                        view!{
-                            <tr>
-                                <td scope="row">{val.display_name}</td>
-                                <td>{val.transaction_total}</td>
-                            </tr>
+
+            <div class="row">
+            <div class="col-8">
+
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th scope="col">Category</th>
+                            <th scope="col">Activity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {
+                        move || {
+                            categories.0.get().into_iter().map(
+                            |val| {
+                                view!{
+                                    <tr on:click = move |ev| {
+                                        category_id_selected_set.set(val.category_id);
+                                        //log!("category selected {category_selected_id}");
+                                    }>
+                                        <td scope="row"
+                                        class:highlight = move || category_id_selected.get() == val.category_id
+                                        >
+                                            {val.display_name}
+                                        </td>
+
+                                        <td
+                                        class:highlight = move || category_id_selected.get() == val.category_id
+                                        >
+                                            {val.transaction_total}
+                                        </td>
+                                    </tr>
+                                }
+
+                            }
+                            ).collect_view()
                         }
-
                     }
-                    ).collect_view()
+                    </tbody>
+                </table>
+
+                <form class="row row-cols-lg-auto" on:submit=create_category>
+                    <div class="col-12">
+                    <input
+                        class="form-control"
+                        placeholder="Enter a name..."
+                        on:input=update_name
+                    />
+                    </div>
+
+                    <div class="col-12">
+                    <button class="btn btn-primary" type="submit">"Add Category"</button>
+                    </div>
+
+                </form>
+
+
+                <div class="dropdown" data-bs-theme="dark">
+                  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonDark">
+                    <li><a class="dropdown-item active" href="#">Action</a></li>
+                    <li><a class="dropdown-item" href="#">Action</a></li>
+                  </ul>
+                </div>
+
+            </div>
+            <div class="col-4 bg-secondary-subtle rounded-3 p-3 px-4">
+                <h3>"Categories Info"</h3>
+                {
+                    move || {
+                        if category_id_selected.get() == 0 {
+                            view! {
+                                <p>"Select category to view detailed info."</p>
+                            }
+                        } else {
+                            view! {
+                                <p>"info here man"</p>
+                            }
+                        }
+                    }
                 }
-            }
-            </tbody>
-        </table>
-
-        <form class="row row-cols-lg-auto" on:submit=create_category>
-            <div class="col-12">
-            <input
-                class="form-control"
-                placeholder="Enter a name..."
-                on:input=update_name
-            />
+            </div>
             </div>
 
-            <div class="col-12">
-            <button class="btn btn-primary" type="submit">"Add Category"</button>
-            </div>
-
-        </form>
-
-
-        <div class="dropdown" data-bs-theme="dark">
-          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonDark">
-            <li><a class="dropdown-item active" href="#">Action</a></li>
-            <li><a class="dropdown-item" href="#">Action</a></li>
-          </ul>
-        </div>
     }
 }
