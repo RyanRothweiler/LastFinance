@@ -44,3 +44,11 @@ pub struct CategoryDisplay {
     pub display_name: String,
     pub transaction_total: i64,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct CategoryDetails {
+    pub category_id: i64,
+    pub max_monthly: i64,
+    pub min_monthly: i64,
+    pub avr_monthly: i64,
+}
