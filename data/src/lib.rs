@@ -14,6 +14,7 @@ pub fn cents_to_dollars(cents: i64) -> f64 {
 }
 
 // Necessary because wasm_bindgen requires serde to serialize between javascript and rust
+// That is my guess atleast wasm_bindget from_value doesn't work on regular results
 // so we need to wrap the result.
 #[derive(Serialize, Deserialize)]
 pub struct ResultWrapped<T, V> {
@@ -21,15 +22,34 @@ pub struct ResultWrapped<T, V> {
 }
 
 impl<T, V> ResultWrapped<T, V> {
-    pub fn error(error: V) -> ResultWrapped<T, V> {
+    pub fn error(error: V) -> Self {
         ResultWrapped {
             res: std::result::Result::Err(error),
         }
     }
 
-    pub fn ok(inn: T) -> ResultWrapped<T, V> {
+    pub fn ok(inn: T) -> Self {
         ResultWrapped {
             res: std::result::Result::Ok(inn),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct OptionWrapped<T> {
+    pub res: std::option::Option<T>,
+}
+
+impl<T> OptionWrapped<T> {
+    pub fn some(data: T) -> Self {
+        OptionWrapped {
+            res: std::option::Option::Some(data),
+        }
+    }
+
+    pub fn none() -> Self {
+        OptionWrapped {
+            res: std::option::Option::None,
         }
     }
 }

@@ -12,9 +12,14 @@ use data::account::Account;
 use data::account::AccountList;
 use data::category::*;
 use data::transaction::*;
+use data::OptionWrapped;
 use data::ResultWrapped;
 
 use database::Database;
+
+use tauri::api::dialog;
+use tauri::api::dialog::FileDialogBuilder;
+use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
 
 struct State {
     db: Mutex<Database>,
@@ -177,7 +182,6 @@ fn get_all_transactions_display(
 fn get_category_display_list(
     ts: tauri::State<State>,
 ) -> ResultWrapped<Vec<CategoryDisplay>, String> {
-
     let conn = match ts.db.lock() {
         Ok(v) => v,
         Err(v) => return ResultWrapped::error("Error locking db".to_string()),
@@ -189,6 +193,28 @@ fn get_category_display_list(
     };
 
     ResultWrapped::ok(ret)
+}
+
+#[tauri::command]
+fn file_dialog() -> OptionWrapped<String> {
+    let file_path_buf = match dialog::blocking::FileDialogBuilder::new()
+        .add_filter("CSV", &["csv"])
+        .pick_file()
+    {
+        Some(v) => v,
+        None => {
+            return OptionWrapped::none();
+        }
+    };
+
+    match file_path_buf.as_path().to_str() {
+        Some(v) => {
+            return OptionWrapped::some(v.to_string());
+        }
+        None => {
+            return OptionWrapped::none();
+        }
+    };
 }
 
 fn main() {
@@ -210,6 +236,7 @@ fn main() {
             get_unassigned,
             get_category_id,
             get_category_display_list,
+            file_dialog,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

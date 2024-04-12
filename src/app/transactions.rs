@@ -13,6 +13,7 @@ use serde_wasm_bindgen::{from_value, to_value};
 
 use crate::app::error_modal;
 use data::transaction::*;
+use data::OptionWrapped;
 use data::ResultWrapped;
 
 async fn get_transactions_list() -> TransactionDisplayList {
@@ -217,7 +218,19 @@ pub fn Transactions() -> impl IntoView {
             <div class="col-12">
             <button class="btn btn-primary" type="submit">"Add Transaction"</button>
             </div>
-
         </form>
+
+        <button class="btn btn-primary" type="submit"
+
+        on:click = move |ev| {
+            spawn_local(async move {
+                let ret_js = super::invoke("file_dialog", JsValue::NULL).await;
+                let ret: OptionWrapped<String> = from_value(ret_js).unwrap();
+                log!("file! {}", ret.res.unwrap());
+            });
+        }
+        >
+            "File Dialog Test"
+        </button>
     }
 }

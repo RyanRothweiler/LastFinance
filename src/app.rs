@@ -1,10 +1,10 @@
 #![allow(unused_variables, unused_imports, dead_code, unused_assignments)]
 
+mod categories;
 mod error_modal;
 mod home;
 mod nav;
 mod transactions;
-mod categories;
 
 use leptos::leptos_dom::ev::SubmitEvent;
 use leptos::logging::*;
