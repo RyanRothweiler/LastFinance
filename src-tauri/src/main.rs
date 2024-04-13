@@ -15,7 +15,7 @@ use data::transaction::*;
 use data::OptionWrapped;
 use data::ResultWrapped;
 
-use database::Database;
+use database::{Database, OrderBy};
 
 use tauri::api::dialog;
 
@@ -121,7 +121,7 @@ fn get_all_categories(ts: tauri::State<State>) -> ResultWrapped<CategoryList, St
     };
 
     let mut list: CategoryList = CategoryList { categories: vec![] };
-    list.categories = match conn.get_all::<Category>() {
+    list.categories = match conn.get_all::<Category>(OrderBy::None) {
         Ok(v) => v,
         Err(v) => return ResultWrapped::error(format!("{:?}", v)),
     };
@@ -137,7 +137,7 @@ fn get_all_accounts(ts: tauri::State<State>) -> ResultWrapped<AccountList, Strin
     };
 
     let mut list: AccountList = AccountList::new();
-    list.accounts = match conn.get_all::<Account>() {
+    list.accounts = match conn.get_all::<Account>(OrderBy::None) {
         Ok(v) => v,
         Err(v) => return ResultWrapped::error(format!("{:?}", v)),
     };
@@ -152,7 +152,7 @@ fn get_all_transactions(ts: tauri::State<State>) -> ResultWrapped<TransactionLis
     };
 
     let mut list: TransactionList = TransactionList::new();
-    list.transactions = match conn.get_all::<Transaction>() {
+    list.transactions = match conn.get_all::<Transaction>(OrderBy::None) {
         Ok(v) => v,
         Err(v) => return ResultWrapped::error(format!("{:?}", v)),
     };

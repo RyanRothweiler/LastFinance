@@ -68,7 +68,7 @@ fn get_all_categories() {
     db.insert(Category::new("first")).unwrap();
     db.insert(Category::new("second")).unwrap();
 
-    let categories = db.get_all::<Category>().unwrap();
+    let categories = db.get_all::<Category>(OrderBy::None).unwrap();
     assert_eq!(categories.len(), 2);
 
     test_remove_db(function!(), db);
@@ -184,6 +184,24 @@ fn import() {
     let dir = std::env::current_dir().unwrap();
     db.import("test_input/month_daily_transactions.csv")
         .unwrap();
+
+    let all_trans: Vec<Transaction> = db.get_all(OrderBy::Date).unwrap();
+
+    assert_eq!(all_trans.len(), 31);
+
+    assert_eq!(all_trans[0].payee, "The Mall");
+    assert_eq!(all_trans[0].amount, data::dollars_to_cents(4931.6));
+
+    let date = PrimitiveDateTime::parse("2024-01-01T00:00:00", &Iso8601::DEFAULT).unwrap();
+    let unix_date = date.assume_utc().unix_timestamp();
+    assert_eq!(all_trans[0].date, unix_date);
+
+    assert_eq!(all_trans[1].payee, "Comcast");
+    assert_eq!(all_trans[1].amount, data::dollars_to_cents(-131.88));
+
+    let date = PrimitiveDateTime::parse("2024-01-02T00:00:00", &Iso8601::DEFAULT).unwrap();
+    let unix_date = date.assume_utc().unix_timestamp();
+    assert_eq!(all_trans[1].date, unix_date);
 
     test_remove_db(function!(), db);
 }

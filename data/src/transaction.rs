@@ -124,3 +124,9 @@ fn transaction_new_outflow_and_inflow() {
         Err("Cannot create transaction with both inflow and outflow.".to_string())
     );
 }
+
+#[test]
+fn transaction_new() {
+    let trans = Transaction::new("payee".to_string(), 0, 10, 0, 0).unwrap();
+    assert_eq!(trans.amount, -10);
+}

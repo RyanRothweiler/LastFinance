@@ -21,6 +21,11 @@ mod import;
 #[cfg(test)]
 mod tests;
 
+pub enum OrderBy {
+    None,
+    Date,
+}
+
 pub struct Database {
     connection: Connection,
 }
@@ -81,11 +86,17 @@ impl Database {
             .unwrap()
     }
 
-    pub fn get_all<T: TableActions>(&self) -> Result<Vec<T>, rusqlite::Error> {
+    pub fn get_all<T: TableActions>(&self, order_by: OrderBy) -> Result<Vec<T>, rusqlite::Error> {
+        let order_str: &str = match order_by {
+            OrderBy::None => "",
+            OrderBy::Date => "ORDER BY date",
+        };
+
         let query = format!(
-            "SELECT {} FROM {}",
+            "SELECT {} FROM {} {}",
             T::get_fetch_schema(),
             T::get_table_name(),
+            order_str,
         );
 
         let mut stmt = self.connection.prepare(&query)?;
@@ -176,13 +187,13 @@ impl Database {
     }
 
     pub fn get_unassigned(&self) -> Result<i64, rusqlite::Error> {
-        let accounts = self.get_all::<Account>()?;
+        let accounts = self.get_all::<Account>(OrderBy::None)?;
         let mut accounts_total = 0;
         for a in accounts {
             accounts_total += a.balance;
         }
 
-        let categories = self.get_all::<Category>()?;
+        let categories = self.get_all::<Category>(OrderBy::None)?;
         let mut categories_total = 0;
         for c in categories {
             categories_total += c.balance;
@@ -250,15 +261,15 @@ impl Database {
             let payee: String = parts.get(2).unwrap().to_string();
 
             // 3 outflow
-            let inflow = parts.get(3).unwrap();
-            let inflow: i64 = match inflow.trim().parse::<f64>() {
+            let outflow = parts.get(3).unwrap();
+            let outflow: i64 = match outflow.trim().parse::<f64>() {
                 Ok(v) => data::dollars_to_cents(v),
                 Err(v) => 0,
             };
 
             // 4 inflow
-            let outflow = parts.get(4).unwrap();
-            let outflow: i64 = match outflow.trim().parse::<f64>() {
+            let inflow = parts.get(4).unwrap();
+            let inflow: i64 = match inflow.trim().parse::<f64>() {
                 Ok(v) => data::dollars_to_cents(v),
                 Err(v) => 0,
             };
