@@ -1,6 +1,12 @@
 #![allow(unused_macros)]
 
-use rusqlite::{params, Connection, Result};
+use rusqlite::{Connection, Result};
+
+use time::format_description::well_known::Iso8601;
+use time::PrimitiveDateTime;
+
+use std::fs::File;
+use std::io::{prelude::*, BufReader};
 
 use data::account::Account;
 use data::category::*;
@@ -9,6 +15,8 @@ use data::transaction::*;
 
 mod table_actions;
 use table_actions::TableActions;
+
+mod import;
 
 #[cfg(test)]
 mod tests;
@@ -127,12 +135,7 @@ impl Database {
         let mut stmt = self.connection.prepare(query)?;
         let mut iter = stmt.query_map([], |row| {
             Ok(TransactionDisplay {
-                trans_raw: Transaction::new_raw(
-                    row.get(0)?,
-                    row.get(1)?,
-                    row.get(2)?,
-                    row.get(3)?,
-                ),
+                trans_raw: Transaction::new_raw(row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?),
                 category_display: row.get(4).unwrap(),
             })
         })?;
@@ -215,5 +218,57 @@ impl Database {
         }
 
         Ok(ret)
+    }
+
+    pub fn import(&self, file_path: &str) -> Result<(), String> {
+        let mut headers = true;
+        let file = File::open(file_path).unwrap();
+        let reader = BufReader::new(file);
+
+        for line in reader.lines() {
+            // to appease the borrow checker
+            let line_str = line.unwrap();
+
+            if headers {
+                headers = false;
+                continue;
+            }
+
+            // account, date, payee, outflow, inflow
+            let parts: Vec<&str> = line_str.split(',').collect();
+
+            // 0 account
+            let account_id = 0;
+
+            // 1 date
+            let mut date_str: String = parts.get(1).unwrap().to_string();
+            date_str.push_str("T00:00:00");
+            let date = PrimitiveDateTime::parse(&date_str, &Iso8601::DEFAULT).unwrap();
+            let unix_date = date.assume_utc().unix_timestamp();
+
+            // 2 payee
+            let payee: String = parts.get(2).unwrap().to_string();
+
+            // 3 outflow
+            let inflow = parts.get(3).unwrap();
+            let inflow: i64 = match inflow.trim().parse::<f64>() {
+                Ok(v) => data::dollars_to_cents(v),
+                Err(v) => 0,
+            };
+
+            // 4 inflow
+            let outflow = parts.get(4).unwrap();
+            let outflow: i64 = match outflow.trim().parse::<f64>() {
+                Ok(v) => data::dollars_to_cents(v),
+                Err(v) => 0,
+            };
+
+            // build transaction
+            let mut trans = Transaction::new(payee, inflow, outflow, unix_date, account_id)?;
+
+            self.insert(trans).unwrap();
+        }
+
+        Ok(())
     }
 }

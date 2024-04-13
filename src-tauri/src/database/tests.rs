@@ -176,3 +176,14 @@ fn get_category_display_list() {
 
     test_remove_db(function!(), db);
 }
+
+#[test]
+fn import() {
+    let db = test_setup_db(function!());
+
+    let dir = std::env::current_dir().unwrap();
+    db.import("test_input/month_daily_transactions.csv")
+        .unwrap();
+
+    test_remove_db(function!(), db);
+}

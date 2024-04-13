@@ -1,10 +1,7 @@
-use super::Database;
-
-use rusqlite::{params, Connection, Result, Row, Rows};
+use rusqlite::{Row};
 
 use data::account::Account;
-use data::category::Category;
-use data::category::CategoryList;
+use data::category::*;
 use data::category_transfer::CategoryTransfer;
 use data::transaction::Transaction;
 

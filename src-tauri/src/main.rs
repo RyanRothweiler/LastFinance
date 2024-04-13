@@ -1,4 +1,4 @@
-#![allow(unused_imports, unused_variables, dead_code, unused_mut)]
+#![allow(unused_variables, dead_code, unused_mut)]
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
@@ -6,7 +6,7 @@ mod database;
 
 use std::sync::Mutex;
 
-use rusqlite::{params, Connection, Result};
+use rusqlite::{Result};
 
 use data::account::Account;
 use data::account::AccountList;
@@ -18,8 +18,6 @@ use data::ResultWrapped;
 use database::Database;
 
 use tauri::api::dialog;
-use tauri::api::dialog::FileDialogBuilder;
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
 
 struct State {
     db: Mutex<Database>,
@@ -196,6 +194,37 @@ fn get_category_display_list(
 }
 
 #[tauri::command]
+fn import(ts: tauri::State<State>) -> ResultWrapped<(), String> {
+    let file_path_buf = match dialog::blocking::FileDialogBuilder::new()
+        .add_filter("CSV", &["csv"])
+        .pick_file()
+    {
+        Some(v) => v,
+        None => {
+            return ResultWrapped::error("Error creating file dialog.".to_string());
+        }
+    };
+
+    let selected_file_path = match file_path_buf.as_path().to_str() {
+        Some(v) => v,
+        None => {
+            return ResultWrapped::error("Invalid file path selected.".to_string());
+        }
+    };
+
+    let conn = match ts.db.lock() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
+    };
+    match conn.import(selected_file_path) {
+        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
+        _ => {}
+    };
+
+    ResultWrapped::ok(())
+}
+
+#[tauri::command]
 fn file_dialog() -> OptionWrapped<String> {
     let file_path_buf = match dialog::blocking::FileDialogBuilder::new()
         .add_filter("CSV", &["csv"])
@@ -237,6 +266,7 @@ fn main() {
             get_category_id,
             get_category_display_list,
             file_dialog,
+            import,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
