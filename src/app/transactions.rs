@@ -223,21 +223,15 @@ pub fn Transactions() -> impl IntoView {
         <button class="btn btn-primary" type="submit"
         on:click = move |ev| {
             spawn_local(async move {
-                let ret_js = super::invoke("file_dialog", JsValue::NULL).await;
-                let ret: OptionWrapped<String> = from_value(ret_js).unwrap();
-                log!("file! {}", ret.res.unwrap());
-            });
-        }
-        >
-            "File Dialog Test"
-        </button>
-
-        <button class="btn btn-primary" type="submit"
-        on:click = move |ev| {
-            spawn_local(async move {
                 let ret_js = super::invoke("import", JsValue::NULL).await;
-                //let ret: OptionWrapped<String> = from_value(ret_js).unwrap();
-                //log!("file! {}", ret.res.unwrap());
+                let ret: ResultWrapped<(), String> = from_value(ret_js).unwrap();
+                match ret.res {
+                    Err(v) => {
+                        error_modal::show_error(v, &global_state);
+                    }
+                    Ok(()) => {}
+                }
+
             });
         }
         >

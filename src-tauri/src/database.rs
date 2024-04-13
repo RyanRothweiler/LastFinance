@@ -178,6 +178,20 @@ impl Database {
         Ok(())
     }
 
+    pub fn category_exists(&self, name: &str) -> Result<bool, rusqlite::Error> {
+        let query = format!(
+            "select COUNT(*) as count
+            from categories
+            where display_name='{}'",
+            name
+        );
+        let count: i64 = self
+            .connection
+            .query_row(&query, [], |row| Ok(row.get(0)?))?;
+        Ok(count > 0)
+    }
+
+    // This will error if the category doesn't exist
     pub fn get_category_id(&self, name: &str) -> Result<i64, rusqlite::Error> {
         let query = format!("SELECT rowid FROM categories WHERE display_name='{name}'");
         let id: i64 = self
@@ -245,7 +259,7 @@ impl Database {
                 continue;
             }
 
-            // account, date, payee, outflow, inflow
+            // account, date, payee, outflow, inflow, categories
             let parts: Vec<&str> = line_str.split(',').collect();
 
             // 0 account
@@ -274,8 +288,19 @@ impl Database {
                 Err(v) => 0,
             };
 
+            // 5 category
+            let category_str: String = parts.get(5).unwrap().to_string();
+
             // build transaction
             let mut trans = Transaction::new(payee, inflow, outflow, unix_date, account_id)?;
+
+            // get category id, otherwise create the category
+            /*
+            match self.get_category_id(category_str) {
+                Some(v) => trans.category_id = v,
+                None => {}
+            }
+            */
 
             self.insert(trans).unwrap();
         }

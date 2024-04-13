@@ -48,7 +48,7 @@ pub struct CategoryDisplay {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CategoryDetails {
     pub category_id: i64,
-    pub max_monthly: i64,
-    pub min_monthly: i64,
-    pub avr_monthly: i64,
+    pub max: i64,
+    pub min: i64,
+    pub average: i64,
 }

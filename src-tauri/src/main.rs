@@ -6,7 +6,7 @@ mod database;
 
 use std::sync::Mutex;
 
-use rusqlite::{Result};
+use rusqlite::Result;
 
 use data::account::Account;
 use data::account::AccountList;

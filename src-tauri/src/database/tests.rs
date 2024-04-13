@@ -75,6 +75,20 @@ fn get_all_categories() {
 }
 
 #[test]
+fn category_exists() {
+    let db = test_setup_db(function!());
+
+    db.insert(Category::new("first")).unwrap();
+    db.insert(Category::new("second")).unwrap();
+
+    assert_eq!(db.category_exists("first"), Ok(true));
+    assert_eq!(db.category_exists("second"), Ok(true));
+    assert_eq!(db.category_exists("third"), Ok(false));
+
+    test_remove_db(function!(), db);
+}
+
+#[test]
 fn get_category_id() {
     let db = test_setup_db(function!());
 
