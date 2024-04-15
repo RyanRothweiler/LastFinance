@@ -203,15 +203,15 @@ fn import() {
 
     assert_eq!(all_trans.len(), 31);
 
-    assert_eq!(all_trans[0].payee, "The Mall");
-    assert_eq!(all_trans[0].amount, data::dollars_to_cents(4931.6));
+    assert_eq!(all_trans[0].payee, "Arbys");
+    assert_eq!(all_trans[0].amount, data::dollars_to_cents(-117.34));
 
     let date = PrimitiveDateTime::parse("2024-01-01T00:00:00", &Iso8601::DEFAULT).unwrap();
     let unix_date = date.assume_utc().unix_timestamp();
     assert_eq!(all_trans[0].date, unix_date);
 
-    assert_eq!(all_trans[1].payee, "Comcast");
-    assert_eq!(all_trans[1].amount, data::dollars_to_cents(-131.88));
+    assert_eq!(all_trans[1].payee, "The City");
+    assert_eq!(all_trans[1].amount, data::dollars_to_cents(648.60));
 
     let date = PrimitiveDateTime::parse("2024-01-02T00:00:00", &Iso8601::DEFAULT).unwrap();
     let unix_date = date.assume_utc().unix_timestamp();

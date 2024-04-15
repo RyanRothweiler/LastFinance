@@ -16,8 +16,6 @@ use data::transaction::*;
 mod table_actions;
 use table_actions::TableActions;
 
-mod import;
-
 #[cfg(test)]
 mod tests;
 
@@ -135,13 +133,13 @@ impl Database {
 
     pub fn get_transaction_list_display(&self) -> Result<TransactionDisplayList, rusqlite::Error> {
         let query = "SELECT 
-                            payee, 
-                            amount, 
-                            date, 
-                            account_id,
-                            ifnull(categories.display_name, '') as category_display_name
-                    from transactions 
-                    left join categories on transactions.category_id = categories.ROWID";
+            payee, 
+        amount, 
+        date, 
+        account_id,
+        ifnull(categories.display_name, '') as category_display_name
+            from transactions 
+            left join categories on transactions.category_id = categories.ROWID";
 
         let mut stmt = self.connection.prepare(query)?;
         let mut iter = stmt.query_map([], |row| {
@@ -219,9 +217,9 @@ impl Database {
     pub fn get_category_display_list(&self) -> Result<Vec<CategoryDisplay>, rusqlite::Error> {
         let query = "
             SELECT 
-                id, 
-                display_name,
-                COALESCE(sum(amount), 0) as transactions_total
+            id, 
+        display_name,
+        COALESCE(sum(amount), 0) as transactions_total
             from categories 
             left join transactions on transactions.category_id = categories.rowid
             group by id
@@ -295,12 +293,13 @@ impl Database {
             let mut trans = Transaction::new(payee, inflow, outflow, unix_date, account_id)?;
 
             // get category id, otherwise create the category
-            /*
-            match self.get_category_id(category_str) {
-                Some(v) => trans.category_id = v,
-                None => {}
+            if self.category_exists(&category_str).unwrap() {
+                trans.category_id = self.get_category_id(&category_str).unwrap();
+            } else {
+                // create that category
+                self.insert(Category::new(&category_str)).unwrap();
+                trans.category_id = self.get_category_id(&category_str).unwrap();
             }
-            */
 
             self.insert(trans).unwrap();
         }
