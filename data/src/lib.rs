@@ -18,7 +18,7 @@ pub fn cents_to_dollars(cents: i64) -> f64 {
 // TODO handle cents here? num_format doesn't seem to handle reals.
 pub fn amount_to_display(cents: i64) -> String {
     let dollars = cents_to_dollars(cents) as i64;
-    return dollars.to_formatted_string(&Locale::en);
+    return format!("${}", dollars.to_formatted_string(&Locale::en)).to_string();
 }
 
 // Necessary because wasm_bindgen requires serde to serialize between javascript and rust

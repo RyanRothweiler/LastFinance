@@ -13,6 +13,8 @@ use data::category::*;
 use data::transaction::*;
 use data::ResultWrapped;
 
+use chrono::prelude::*;
+
 async fn get_category_list() -> Vec<CategoryDisplay> {
     let ret_js: JsValue = super::invoke("get_category_display_list", JsValue::NULL).await;
     let ret: ResultWrapped<Vec<CategoryDisplay>, String> = from_value(ret_js).unwrap();
@@ -22,6 +24,9 @@ async fn get_category_list() -> Vec<CategoryDisplay> {
 #[component]
 pub fn Categories() -> impl IntoView {
     let global_state = expect_context::<RwSignal<super::GlobalState>>();
+
+    let (month_selected, month_selected_set) = create_signal::<u32>(1);
+    let (year_selected, year_selected_set) = create_signal::<i32>(2024);
 
     let categories = create_signal::<Vec<CategoryDisplay>>(vec![]);
     create_resource(
@@ -70,6 +75,50 @@ pub fn Categories() -> impl IntoView {
     let (category_id_selected, category_id_selected_set) = create_signal(0);
 
     view! {
+
+        <div class="btn-group btn-group-sm" role="group" aria-label="Basic outlined example">
+            <button type="button" class="btn btn-outline-primary"
+                on:click = move |ev| {
+                    month_selected_set.update(|input: &mut u32| {
+                        *input -= 1;
+                        if *input <= 0 {
+                            *input = 12;
+                        }
+                    });
+                }
+            >
+                "-"
+            </button>
+
+            <button type="button" class="btn btn-outline-primary"
+                on:click = move |ev| {
+                    month_selected_set.update(|input: &mut u32| {
+                        *input += 1;
+                        if *input >= 13 {
+                            *input = 1;
+                        }
+                    });
+                }
+            >
+                "+"
+            </button>
+        </div>
+
+
+        {move || {
+                let date = chrono::Utc.with_ymd_and_hms(year_selected.get(), month_selected.get(), 1, 0, 0, 0).unwrap();
+
+                let unix = date.timestamp();
+                let date_disp = date.format("%B %G").to_string();
+
+                view! {
+                    <h1>{date_disp}</h1>
+                    <p>{move || month_selected.get()} "/" {move || year_selected.get()}</p>
+                    <p>{move || unix}</p>
+                }
+            }
+        }
+
         <h1>
             "Categories"
         </h1>
@@ -93,7 +142,6 @@ pub fn Categories() -> impl IntoView {
                                 view!{
                                     <tr on:click = move |ev| {
                                         category_id_selected_set.set(val.category_id);
-                                        //log!("category selected {category_selected_id}");
                                     }>
                                         <td scope="row"
                                         class:highlight = move || category_id_selected.get() == val.category_id

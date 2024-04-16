@@ -14,6 +14,7 @@ serde-wasm-bindgen = "0.6"
 data = { path = "data"}
 leptos_router = { version = "0.6.10", features = ["csr"] }
 time = { version = "0.3.35", features = ['parsing', 'formatting']}
+chrono = "0.4.38"
 
 [workspace]
 members = ["src-tauri", "data"]
