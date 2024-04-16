@@ -42,13 +42,6 @@ impl CategoryList {
 pub struct CategoryDisplay {
     pub category_id: i64,
     pub display_name: String,
+    pub transaction_average: f64,
     pub transaction_total: i64,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct CategoryDetails {
-    pub category_id: i64,
-    pub max: i64,
-    pub min: i64,
-    pub average: i64,
 }

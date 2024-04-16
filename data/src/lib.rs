@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use num_format::{Locale, ToFormattedString};
+
 pub mod account;
 pub mod category;
 pub mod category_transfer;
@@ -11,6 +13,12 @@ pub fn dollars_to_cents(dollars: f64) -> i64 {
 
 pub fn cents_to_dollars(cents: i64) -> f64 {
     return (cents as f64) / 100.0;
+}
+
+// TODO handle cents here? num_format doesn't seem to handle reals.
+pub fn amount_to_display(cents: i64) -> String {
+    let dollars = cents_to_dollars(cents) as i64;
+    return dollars.to_formatted_string(&Locale::en);
 }
 
 // Necessary because wasm_bindgen requires serde to serialize between javascript and rust

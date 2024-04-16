@@ -217,9 +217,10 @@ impl Database {
     pub fn get_category_display_list(&self) -> Result<Vec<CategoryDisplay>, rusqlite::Error> {
         let query = "
             SELECT 
-            id, 
-        display_name,
-        COALESCE(sum(amount), 0) as transactions_total
+                id, 
+                display_name,
+                coalesce(avg(amount), 0) as transactions_average,
+                coalesce(sum(amount), 0) as transactions_total
             from categories 
             left join transactions on transactions.category_id = categories.rowid
             group by id
@@ -231,7 +232,8 @@ impl Database {
             Ok(CategoryDisplay {
                 category_id: row.get(0)?,
                 display_name: row.get(1)?,
-                transaction_total: row.get(2)?,
+                transaction_average: row.get(2)?,
+                transaction_total: row.get(3)?,
             })
         })?;
 
@@ -292,13 +294,16 @@ impl Database {
             // build transaction
             let mut trans = Transaction::new(payee, inflow, outflow, unix_date, account_id)?;
 
-            // get category id, otherwise create the category
-            if self.category_exists(&category_str).unwrap() {
-                trans.category_id = self.get_category_id(&category_str).unwrap();
-            } else {
-                // create that category
-                self.insert(Category::new(&category_str)).unwrap();
-                trans.category_id = self.get_category_id(&category_str).unwrap();
+            // Only add categories for outflow
+            if outflow > 0 {
+                // get category id, otherwise create the category
+                if self.category_exists(&category_str).unwrap() {
+                    trans.category_id = self.get_category_id(&category_str).unwrap();
+                } else {
+                    // create that category
+                    self.insert(Category::new(&category_str)).unwrap();
+                    trans.category_id = self.get_category_id(&category_str).unwrap();
+                }
             }
 
             self.insert(trans).unwrap();

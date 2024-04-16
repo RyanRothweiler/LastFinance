@@ -82,7 +82,7 @@ pub fn Categories() -> impl IntoView {
                     <thead>
                         <tr>
                             <th scope="col">Category</th>
-                            <th scope="col">Activity</th>
+                            <th scope="col">Spending</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -104,7 +104,7 @@ pub fn Categories() -> impl IntoView {
                                         <td
                                         class:highlight = move || category_id_selected.get() == val.category_id
                                         >
-                                            {val.transaction_total}
+                                            {data::amount_to_display(val.transaction_total * -1)}
                                         </td>
                                     </tr>
                                 }
@@ -141,16 +141,24 @@ pub fn Categories() -> impl IntoView {
 
             </div>
             <div class="col-4 bg-secondary-subtle rounded-3 p-3 px-4">
-                <h3>"Categories Info"</h3>
+                <h5 class="text-secondary">"Categories Info"</h5>
                 {
                     move || {
                         if category_id_selected.get() == 0 {
                             view! {
-                                <p>"Select category to view detailed info."</p>
+                                <h1></h1>
+                                <p class="text-secondary">"Select category to view detailed info."</p>
                             }
                         } else {
+                            let cats: Vec<CategoryDisplay> = categories.0.get();
+
+                            // Get index from id
+                            let cat_info: &CategoryDisplay = cats.get((category_id_selected.get() - 1) as usize).unwrap();
+
                             view! {
-                                <p>"info here man"</p>
+                                <h2>{&cat_info.display_name}</h2>
+                                <p>"Spending Total " {data::amount_to_display(cat_info.transaction_total * -1)}</p>
+                                <p>"Average (per transaction) " {data::amount_to_display((cat_info.transaction_average * -1.0) as i64)}</p>
                             }
                         }
                     }
