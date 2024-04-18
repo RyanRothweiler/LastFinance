@@ -139,7 +139,8 @@ impl Database {
         account_id,
         ifnull(categories.display_name, '') as category_display_name
             from transactions 
-            left join categories on transactions.category_id = categories.ROWID";
+            left join categories on transactions.category_id = categories.ROWID
+            ";
 
         let mut stmt = self.connection.prepare(query)?;
         let mut iter = stmt.query_map([], |row| {
@@ -214,8 +215,13 @@ impl Database {
         return Ok(accounts_total - categories_total);
     }
 
-    pub fn get_category_display_list(&self) -> Result<Vec<CategoryDisplay>, rusqlite::Error> {
-        let query = "
+    pub fn get_category_display_list(
+        &self,
+        unix_start: i64,
+        unix_end: i64,
+    ) -> Result<Vec<CategoryDisplay>, rusqlite::Error> {
+        let query = format!(
+            "
             SELECT 
                 id, 
                 display_name,
@@ -223,11 +229,13 @@ impl Database {
                 coalesce(sum(amount), 0) as transactions_total
             from categories 
             left join transactions on transactions.category_id = categories.rowid
+            where coalesce(transactions.date, 0) between {unix_start} and {unix_end}
             group by id
             order by id
-            ";
+            "
+        );
 
-        let mut stmt = self.connection.prepare(query)?;
+        let mut stmt = self.connection.prepare(&query)?;
         let mut iter = stmt.query_map([], |row| {
             Ok(CategoryDisplay {
                 category_id: row.get(0)?,
@@ -241,6 +249,31 @@ impl Database {
         for c in iter {
             ret.push(c.unwrap());
         }
+
+        // get list of all categories and add any missing to the list
+        let mut new_cats: Vec<CategoryDisplay> = vec![];
+
+        let all_cats: Vec<Category> = self.get_all(OrderBy::None).unwrap();
+        for c_all in &all_cats {
+            let mut found = false;
+
+            for c_ret in &ret {
+                if c_ret.category_id == c_all.id {
+                    found = true;
+                    break;
+                }
+            }
+
+            if !found {
+                new_cats.push(CategoryDisplay {
+                    category_id: c_all.id,
+                    display_name: c_all.display_name.clone(),
+                    transaction_average: 0.0,
+                    transaction_total: 0,
+                });
+            }
+        }
+        ret.append(&mut new_cats);
 
         Ok(ret)
     }

@@ -15,9 +15,46 @@ use data::ResultWrapped;
 
 use chrono::prelude::*;
 
-async fn get_category_list() -> Vec<CategoryDisplay> {
-    let ret_js: JsValue = super::invoke("get_category_display_list", JsValue::NULL).await;
+async fn get_category_list(year: i32, month: u32) -> Vec<CategoryDisplay> {
+    let mut date_start = chrono::Utc
+        .with_ymd_and_hms(year, month, 1, 0, 0, 0)
+        .unwrap();
+
+    let mut date_end = date_start
+        .checked_add_months(chrono::Months::new(1))
+        .unwrap();
+
+    // Shift back one second.
+    // We want to get date from previous month 23::59::59 to current month 23::59::59
+    // Otherwise we'll get transactions right on the edges.
+    // This assumes no transactions happen exactly a 23::59::59
+    date_start = date_start
+        .checked_sub_signed(chrono::TimeDelta::seconds(1))
+        .unwrap();
+    date_end = date_end
+        .checked_sub_signed(chrono::TimeDelta::seconds(1))
+        .unwrap();
+
+    #[derive(Serialize, Deserialize)]
+    struct Args {
+        start: i64,
+        end: i64,
+    }
+
+    let start = date_start.timestamp();
+    let end = date_end.timestamp();
+
+    //log!("{start} -> {end}");
+
+    let args = to_value(&Args {
+        start: start,
+        end: end,
+    })
+    .unwrap();
+
+    let ret_js: JsValue = super::invoke("get_category_display_list", args).await;
     let ret: ResultWrapped<Vec<CategoryDisplay>, String> = from_value(ret_js).unwrap();
+
     return ret.res.unwrap();
 }
 
@@ -32,7 +69,22 @@ pub fn Categories() -> impl IntoView {
     create_resource(
         || (),
         move |_| async move {
-            let lst = get_category_list().await;
+            let date = chrono::Utc
+                .with_ymd_and_hms(
+                    year_selected.get_untracked(),
+                    month_selected.get_untracked(),
+                    1,
+                    0,
+                    0,
+                    0,
+                )
+                .unwrap();
+
+            let lst = get_category_list(
+                year_selected.get_untracked(),
+                month_selected.get_untracked(),
+            )
+            .await;
             categories.1.set(lst);
         },
     );
@@ -67,7 +119,7 @@ pub fn Categories() -> impl IntoView {
                 _ => {}
             }
 
-            let cat_list = get_category_list().await;
+            let cat_list = get_category_list(year_selected.get(), month_selected.get()).await;
             categories.1.set(cat_list);
         });
     };
@@ -83,7 +135,15 @@ pub fn Categories() -> impl IntoView {
                         *input -= 1;
                         if *input <= 0 {
                             *input = 12;
+
+                            let year = year_selected.get();
+                            year_selected_set.set_untracked(year - 1);
                         }
+                    });
+
+                    spawn_local(async move {
+                        let lst = get_category_list(year_selected.get_untracked(), month_selected.get_untracked()).await;
+                        categories.1.set(lst);
                     });
                 }
             >
@@ -96,7 +156,15 @@ pub fn Categories() -> impl IntoView {
                         *input += 1;
                         if *input >= 13 {
                             *input = 1;
+
+                            let year = year_selected.get();
+                            year_selected_set.set_untracked(year + 1);
                         }
+                    });
+
+                    spawn_local(async move {
+                        let lst = get_category_list(year_selected.get_untracked(), month_selected.get_untracked()).await;
+                        categories.1.set(lst);
                     });
                 }
             >
@@ -107,14 +175,13 @@ pub fn Categories() -> impl IntoView {
 
         {move || {
                 let date = chrono::Utc.with_ymd_and_hms(year_selected.get(), month_selected.get(), 1, 0, 0, 0).unwrap();
-
-                let unix = date.timestamp();
-                let date_disp = date.format("%B %G").to_string();
+                let month_disp = date.format("%B").to_string();
+                let year_disp = date.format("%G").to_string();
 
                 view! {
-                    <h1>{date_disp}</h1>
+                    <h1>{month_disp}</h1>
+                    <h1>{year_disp}</h1>
                     <p>{move || month_selected.get()} "/" {move || year_selected.get()}</p>
-                    <p>{move || unix}</p>
                 }
             }
         }

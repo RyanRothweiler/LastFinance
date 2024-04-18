@@ -178,6 +178,8 @@ fn get_all_transactions_display(
 
 #[tauri::command]
 fn get_category_display_list(
+    start: i64,
+    end: i64,
     ts: tauri::State<State>,
 ) -> ResultWrapped<Vec<CategoryDisplay>, String> {
     let conn = match ts.db.lock() {
@@ -185,7 +187,7 @@ fn get_category_display_list(
         Err(v) => return ResultWrapped::error("Error locking db".to_string()),
     };
 
-    let ret = match conn.get_category_display_list() {
+    let ret = match conn.get_category_display_list(start, end) {
         Ok(v) => v,
         Err(v) => return ResultWrapped::error(format!("{:?}", v)),
     };

@@ -148,6 +148,10 @@ fn get_transaction_list_display() {
     test_remove_db(function!(), db);
 }
 
+// TODO add start and end time testing here.
+// Add testing to handle these cases
+// - Categories for which there are no transacions
+// - Categories for which there are transactions but their dates aren't within range
 #[test]
 fn get_category_display_list() {
     let db = test_setup_db(function!());
@@ -156,26 +160,26 @@ fn get_category_display_list() {
     db.insert(Category::new("second")).unwrap();
     db.insert(Category::new("third")).unwrap();
 
-    let mut trans = Transaction::new_raw("ryans transaction".to_string(), 5, 0, 0);
+    let mut trans = Transaction::new_raw("ryans transaction".to_string(), 5, 10, 0);
     db.insert(trans).unwrap();
 
-    let mut trans = Transaction::new_raw("ryans transaction".to_string(), 100, 0, 0);
+    let mut trans = Transaction::new_raw("ryans transaction".to_string(), 100, 10, 0);
     trans.category_id = 1;
     db.insert(trans).unwrap();
 
-    let mut trans = Transaction::new_raw("ryans transaction".to_string(), 1000, 0, 0);
+    let mut trans = Transaction::new_raw("ryans transaction".to_string(), 1000, 10, 0);
     trans.category_id = 1;
     db.insert(trans).unwrap();
 
-    let mut trans = Transaction::new_raw("ryans second transaction".to_string(), 1, 0, 0);
+    let mut trans = Transaction::new_raw("ryans second transaction".to_string(), 1, 10, 0);
     trans.category_id = 2;
     db.insert(trans).unwrap();
 
-    let mut trans = Transaction::new_raw("ryans second transaction".to_string(), -10, 0, 0);
+    let mut trans = Transaction::new_raw("ryans second transaction".to_string(), -10, 10, 0);
     trans.category_id = 2;
     db.insert(trans).unwrap();
 
-    let category_displays = db.get_category_display_list().unwrap();
+    let category_displays = db.get_category_display_list(1, 10_000).unwrap();
 
     assert_eq!(category_displays.len(), 3);
 
