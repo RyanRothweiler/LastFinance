@@ -171,7 +171,7 @@ pub fn Home() -> impl IntoView {
                                      acc: i64,
                                  }
                                  let args = to_value(&Args {
-                                     acc: 0,
+                                     acc: val.id,
                                  })
                                  .unwrap();
                                  let ret_js = super::invoke("import", args).await;
