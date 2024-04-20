@@ -54,7 +54,8 @@ impl Database {
         return db;
     }
 
-    pub fn insert<T: TableActions>(&self, data: T) -> Result<(), rusqlite::Error> {
+    // Returns the row id
+    pub fn insert<T: TableActions>(&self, data: T) -> Result<i64, rusqlite::Error> {
         let mut query = String::new();
         query.push_str("INSERT INTO ");
         query.push_str(&T::get_table_name());
@@ -68,7 +69,7 @@ impl Database {
         query.push_str(")");
 
         self.connection.execute(&query, ())?;
-        Ok(())
+        Ok(self.connection.last_insert_rowid())
     }
 
     pub fn get<T: TableActions>(&self, id: i64) -> T {
@@ -278,7 +279,7 @@ impl Database {
         Ok(ret)
     }
 
-    pub fn import(&self, file_path: &str) -> Result<(), String> {
+    pub fn import(&self, file_path: &str, account_id: i64) -> Result<(), String> {
         let mut headers = true;
         let file = File::open(file_path).unwrap();
         let reader = BufReader::new(file);
@@ -294,9 +295,6 @@ impl Database {
 
             // account, date, payee, outflow, inflow, categories
             let parts: Vec<&str> = line_str.split(',').collect();
-
-            // 0 account
-            let account_id = 0;
 
             // 1 date
             let mut date_str: String = parts.get(1).unwrap().to_string();

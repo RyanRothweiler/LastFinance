@@ -220,23 +220,5 @@ pub fn Transactions() -> impl IntoView {
             </div>
         </form>
 
-        <button class="btn btn-primary" type="submit"
-        on:click = move |ev| {
-            spawn_local(async move {
-                let ret_js = super::invoke("import", JsValue::NULL).await;
-                let ret: ResultWrapped<(), String> = from_value(ret_js).unwrap();
-                match ret.res {
-                    Err(v) => {
-                        error_modal::show_error(v, &global_state);
-                    }
-                    Ok(()) => {}
-                }
-
-            });
-        }
-        >
-            "Import CSV"
-        </button>
-
     }
 }

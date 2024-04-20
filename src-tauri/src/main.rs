@@ -6,6 +6,7 @@ mod database;
 
 use std::sync::Mutex;
 
+use chrono::prelude::*;
 use rusqlite::Result;
 
 use data::account::Account;
@@ -63,14 +64,31 @@ fn get_category_id(name: &str, ts: tauri::State<State>) -> ResultWrapped<i64, St
 }
 
 #[tauri::command]
-fn create_account(name: &str, ts: tauri::State<State>) -> ResultWrapped<(), String> {
+// sb -> starting balance
+fn create_account(name: &str, sb: i64, ts: tauri::State<State>) -> ResultWrapped<(), String> {
     let conn = match ts.db.lock() {
         Ok(v) => v,
         Err(v) => return ResultWrapped::error("Error locking db".to_string()),
     };
 
+    let mut account_id: i64;
     let account = Account::new(name);
     match conn.insert(account) {
+        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
+        Ok(v) => account_id = v,
+    };
+
+    let starting_trans = match Transaction::new(
+        "Starting Balance".to_string(),
+        sb,
+        0,
+        Local::now().timestamp(),
+        account_id,
+    ) {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
+    };
+    match conn.insert(starting_trans) {
         Err(v) => return ResultWrapped::error(format!("{:?}", v)),
         _ => {}
     };
@@ -196,7 +214,7 @@ fn get_category_display_list(
 }
 
 #[tauri::command]
-fn import(ts: tauri::State<State>) -> ResultWrapped<(), String> {
+fn import(acc: i64, ts: tauri::State<State>) -> ResultWrapped<(), String> {
     let file_path_buf = match dialog::blocking::FileDialogBuilder::new()
         .add_filter("CSV", &["csv"])
         .pick_file()
@@ -218,7 +236,7 @@ fn import(ts: tauri::State<State>) -> ResultWrapped<(), String> {
         Ok(v) => v,
         Err(v) => return ResultWrapped::error("Error locking db".to_string()),
     };
-    match conn.import(selected_file_path) {
+    match conn.import(selected_file_path, acc) {
         Err(v) => return ResultWrapped::error(format!("{:?}", v)),
         _ => {}
     };

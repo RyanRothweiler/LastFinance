@@ -18,6 +18,7 @@ rusqlite = { version = "0.31.0", features = ["bundled"] }
 
 data = { path = "../data" }
 time = { version = "0.3.35", features = ['parsing', 'formatting'] }
+chrono = "0.4.38"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
