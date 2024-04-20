@@ -80,6 +80,7 @@ impl Database {
             id
         );
 
+        // TODO don't unwrap here. Return error.
         self.connection
             .query_row(&query, [], |row| Ok(T::row_to_data(row)))
             .unwrap()
@@ -133,14 +134,17 @@ impl Database {
     }
 
     pub fn get_transaction_list_display(&self) -> Result<TransactionDisplayList, rusqlite::Error> {
-        let query = "SELECT 
-            payee, 
-        amount, 
-        date, 
-        account_id,
-        ifnull(categories.display_name, '') as category_display_name
+        let query = "
+            SELECT 
+                payee, 
+                amount, 
+                date, 
+                account_id,
+                ifnull(categories.display_name, '') as category_display_name,
+                ifnull(accounts.display_name, '') as account_display_name
             from transactions 
             left join categories on transactions.category_id = categories.ROWID
+            left join accounts on transactions.account_id = accounts.ROWID
             ";
 
         let mut stmt = self.connection.prepare(query)?;
@@ -148,6 +152,7 @@ impl Database {
             Ok(TransactionDisplay {
                 trans_raw: Transaction::new_raw(row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?),
                 category_display: row.get(4).unwrap(),
+                account_display: row.get(5).unwrap(),
             })
         })?;
 

@@ -137,6 +137,7 @@ pub fn Transactions() -> impl IntoView {
                 <tr>
                     <th scope="col">Payee</th>
                     <th scope="col">Date</th>
+                    <th scope="col">Account</th>
                     <th scope="col">Category</th>
                     <th scope="col">Outflow</th>
                     <th scope="col">Inflow</th>
@@ -150,9 +151,9 @@ pub fn Transactions() -> impl IntoView {
                         let mut outflow = String::new();
                         let mut inflow = String::new();
                         if val.trans_raw.amount > 0 {
-                            inflow = format!("{:?}", val.trans_raw.amount);
+                            inflow = data::amount_to_display(val.trans_raw.amount);
                         } else {
-                            outflow = format!("{:?}", -val.trans_raw.amount);
+                            outflow = data::amount_to_display(-val.trans_raw.amount);
                         }
 
                         let mut date = String::new();
@@ -171,6 +172,7 @@ pub fn Transactions() -> impl IntoView {
                             <tr>
                                 <td style="width:50%">{val.trans_raw.payee}</td>
                                 <td>{date}</td>
+                                <td>{val.account_display}</td>
                                 <td>{val.category_display}</td>
                                 <td style="width:5%">{outflow}</td>
                                 <td style="width:5%">{inflow}</td>

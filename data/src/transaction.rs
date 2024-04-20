@@ -89,13 +89,19 @@ impl TransactionList {
 pub struct TransactionDisplay {
     pub trans_raw: Transaction,
     pub category_display: String,
+    pub account_display: String,
 }
 
 impl TransactionDisplay {
-    pub fn new(trans_raw: Transaction, category_display: String) -> TransactionDisplay {
+    pub fn new(
+        trans_raw: Transaction,
+        category_display: String,
+        account_display: String,
+    ) -> TransactionDisplay {
         TransactionDisplay {
             trans_raw,
             category_display,
+            account_display,
         }
     }
 }
