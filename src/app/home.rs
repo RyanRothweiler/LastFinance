@@ -159,8 +159,11 @@ pub fn Home() -> impl IntoView {
              |val| {
                  view!{
                      <li>
-                         <h2>{val.display_name}</h2>
-                         <p>{data::cents_to_dollars(val.balance)}</p>
+
+                        <div class="bg-secondary-subtle rounded-3 p-3 px-4 my-1">
+
+                         <h1>{val.display_name}</h1>
+                         <h1>{data::cents_to_dollars(val.balance)}</h1>
                          <button type="submit" class="btn btn-outline-secondary btn-sm" on:click=move |_| {fund_account(val.id)}>"fund"</button>
 
                          <button class="btn btn-outline-secondary btn-sm" type="submit"
@@ -188,6 +191,8 @@ pub fn Home() -> impl IntoView {
                          >
                              "Import CSV"
                          </button>
+
+                         </div>
 
                     </li>
                  }
