@@ -12,9 +12,9 @@ use crate::app::error_modal;
 use data::account::*;
 use data::ResultWrapped;
 
-async fn get_account_list() -> AccountList {
+async fn get_account_list() -> Vec<Account> {
     let ret_js: JsValue = super::invoke("get_all_accounts", JsValue::NULL).await;
-    let ret: ResultWrapped<AccountList, String> = from_value(ret_js).unwrap();
+    let ret: ResultWrapped<Vec<Account>, String> = from_value(ret_js).unwrap();
     return ret.res.unwrap();
 }
 
@@ -22,7 +22,7 @@ async fn get_account_list() -> AccountList {
 pub fn Home() -> impl IntoView {
     let global_state = expect_context::<RwSignal<super::GlobalState>>();
 
-    let accounts = create_signal::<AccountList>(AccountList::new());
+    let accounts = create_signal::<Vec<Account>>(vec![]);
     let account_res = create_resource(
         || (),
         move |_| async move {
@@ -168,9 +168,22 @@ pub fn Home() -> impl IntoView {
 
          <div class="container-fluid">
          <div class="row">
+
+         {
+            move || {
+                if accounts.0.get().len() == 0 {
+                    return view! {
+                        <h1>"Add an account to get started."</h1>
+                    };
+                }
+
+                return view!{<h1></h1>};
+            }
+         }
+
          {
          move || {
-             accounts.0.get().accounts.into_iter().map(
+             accounts.0.get().into_iter().map(
              |val| {
                  view!{
 
@@ -185,7 +198,7 @@ pub fn Home() -> impl IntoView {
                             </div>
 
                             <div class="col text-end">
-                                <h1>{data::cents_to_dollars(val.balance)}</h1>
+                                <h1>"balance here"</h1>
                             </div>
 
                           </div>

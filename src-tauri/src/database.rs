@@ -166,23 +166,6 @@ impl Database {
         Ok(ret)
     }
 
-    // adds to the amount in the account
-    pub fn fund_account(&self, amount: i64, id: i64) -> Result<(), String> {
-        let account: Account = self.get::<Account>(id);
-        let new_bal = account.balance + amount;
-
-        let update_query = format!(
-            "UPDATE {} SET balance = {} WHERE ROWID = {}",
-            data::account::Account::get_table_name(),
-            new_bal,
-            id,
-        );
-        self.connection.execute(&update_query, ()).unwrap();
-
-        println!("account {} funded {}", id, amount);
-        Ok(())
-    }
-
     pub fn category_exists(&self, name: &str) -> Result<bool, rusqlite::Error> {
         let query = format!(
             "select COUNT(*) as count
@@ -206,6 +189,8 @@ impl Database {
     }
 
     pub fn get_unassigned(&self) -> Result<i64, rusqlite::Error> {
+        todo!();
+        /*
         let accounts = self.get_all::<Account>(OrderBy::None)?;
         let mut accounts_total = 0;
         for a in accounts {
@@ -219,6 +204,7 @@ impl Database {
         }
 
         return Ok(accounts_total - categories_total);
+        */
     }
 
     pub fn get_category_display_list(

@@ -9,8 +9,7 @@ use std::sync::Mutex;
 use chrono::prelude::*;
 use rusqlite::Result;
 
-use data::account::Account;
-use data::account::AccountList;
+use data::account::*;
 use data::category::*;
 use data::transaction::*;
 use data::OptionWrapped;
@@ -112,21 +111,6 @@ fn create_transaction(trans: Transaction, ts: tauri::State<State>) -> ResultWrap
 }
 
 #[tauri::command]
-fn fund_account(id: i64, cents: i64, ts: tauri::State<State>) -> ResultWrapped<(), String> {
-    let conn = match ts.db.lock() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
-    };
-
-    match conn.fund_account(cents, id) {
-        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
-        _ => {}
-    };
-
-    ResultWrapped::ok(())
-}
-
-#[tauri::command]
 fn get_unassigned(ts: tauri::State<State>) -> ResultWrapped<f64, String> {
     return ResultWrapped::ok(100.5);
 }
@@ -148,14 +132,13 @@ fn get_all_categories(ts: tauri::State<State>) -> ResultWrapped<CategoryList, St
 }
 
 #[tauri::command]
-fn get_all_accounts(ts: tauri::State<State>) -> ResultWrapped<AccountList, String> {
+fn get_all_accounts(ts: tauri::State<State>) -> ResultWrapped<Vec<Account>, String> {
     let conn = match ts.db.lock() {
         Ok(v) => v,
         Err(v) => return ResultWrapped::error("Error locking db".to_string()),
     };
 
-    let mut list: AccountList = AccountList::new();
-    list.accounts = match conn.get_all::<Account>(OrderBy::None) {
+    let list = match conn.get_all::<Account>(OrderBy::None) {
         Ok(v) => v,
         Err(v) => return ResultWrapped::error(format!("{:?}", v)),
     };
@@ -281,7 +264,6 @@ fn main() {
             get_all_accounts,
             get_all_transactions,
             get_all_transactions_display,
-            fund_account,
             get_unassigned,
             get_category_id,
             get_category_display_list,

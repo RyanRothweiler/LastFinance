@@ -50,18 +50,6 @@ fn insert_get() {
 }
 
 #[test]
-fn fund_get_ccount() {
-    let db = test_setup_db(function!());
-    db.insert(Account::new("Ryans Account")).unwrap();
-    db.fund_account(data::dollars_to_cents(123.45), 1).unwrap();
-
-    let ac = db.get::<Account>(1);
-    assert_eq!(ac.balance, 12345);
-
-    test_remove_db(function!(), db);
-}
-
-#[test]
 fn get_all_categories() {
     let db = test_setup_db(function!());
 
@@ -101,22 +89,6 @@ fn get_category_id() {
         db.get_category_id("what??"),
         Err(rusqlite::Error::QueryReturnedNoRows)
     );
-
-    test_remove_db(function!(), db);
-}
-
-#[test]
-fn get_unassigned() {
-    let db = test_setup_db(function!());
-
-    db.insert(Account::new("first account")).unwrap();
-    db.fund_account(data::dollars_to_cents(100.0), 1).unwrap();
-
-    db.insert(Category::new("first")).unwrap();
-    db.insert(Category::new("second")).unwrap();
-
-    let unassigned = db.get_unassigned().unwrap();
-    assert_eq!(unassigned, data::dollars_to_cents(100.0));
 
     test_remove_db(function!(), db);
 }

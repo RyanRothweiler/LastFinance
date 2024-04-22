@@ -16,8 +16,7 @@ use serde_wasm_bindgen::{from_value, to_value};
 
 use wasm_bindgen::prelude::*;
 
-use data::account::Account;
-use data::account::AccountList;
+use data::account::*;
 use data::category::Category;
 use data::category::CategoryList;
 use data::ResultWrapped;
