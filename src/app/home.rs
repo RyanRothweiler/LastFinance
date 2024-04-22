@@ -166,19 +166,41 @@ pub fn Home() -> impl IntoView {
          </div>
 
 
-         <ul class="nav flex-column">
+         <div class="container-fluid">
+         <div class="row">
          {
          move || {
              accounts.0.get().accounts.into_iter().map(
              |val| {
                  view!{
-                     <li>
 
-                        <div class="bg-secondary-subtle rounded-3 p-3 px-4 my-1">
+                        <div class="col-md-6">
+                        <div class="bg-secondary-subtle rounded-3 p-3 px-4 my-3">
 
-                         <h1>{val.display_name}</h1>
-                         <h1>{data::cents_to_dollars(val.balance)}</h1>
-                         <button type="submit" class="btn btn-outline-secondary btn-sm" on:click=move |_| {fund_account(val.id)}>"fund"</button>
+                        <div class="container-fluid">
+                          <div class="row">
+
+                            <div class="col">
+                                <h1>{val.display_name}</h1>
+                            </div>
+
+                            <div class="col text-end">
+                                <h1>{data::cents_to_dollars(val.balance)}</h1>
+                            </div>
+
+                          </div>
+                        </div>
+
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-sm-2">
+                                </div>
+                                <div clss="col">
+                                </div>
+                            </div>
+                        </div>
+
+
 
                          <button class="btn btn-outline-secondary btn-sm" type="submit"
                          on:click = move |ev| {
@@ -203,18 +225,18 @@ pub fn Home() -> impl IntoView {
                              });
                          }
                          >
-                             "Import CSV"
+                             "Import Transactions CSV"
                          </button>
 
                          </div>
-
-                    </li>
+                         </div>
                  }
              }
              ).collect_view()
-         }
-         }
-         </ul>
+        }
+        }
+        </div>
+        </div>
 
     }
 }
