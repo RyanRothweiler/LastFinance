@@ -1,3 +1,8 @@
 .highlight {
 		background-color: grey !important;
 }
+
+.bi { 
+		vertical-align: -.25em;
+		margin-right: 7px;
+}
