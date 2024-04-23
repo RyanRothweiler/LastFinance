@@ -16,3 +16,10 @@ impl Account {
         }
     }
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct AccountDisplay {
+    pub account_id: i64,
+    pub display_name: String,
+    pub balance: i64,
+}

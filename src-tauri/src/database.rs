@@ -8,7 +8,7 @@ use time::PrimitiveDateTime;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 
-use data::account::Account;
+use data::account::*;
 use data::category::*;
 use data::category_transfer::CategoryTransfer;
 use data::transaction::*;
@@ -205,6 +205,34 @@ impl Database {
 
         return Ok(accounts_total - categories_total);
         */
+    }
+
+    pub fn get_account_display_list(&self) -> Result<Vec<AccountDisplay>, rusqlite::Error> {
+        let query = "
+              SELECT 
+                accounts.rowid,
+                accounts.display_name,
+                sum(amount) as balance
+                    from accounts
+                    left join transactions on transactions.account_id = accounts.rowid           
+              group by account_id
+            ";
+
+        let mut stmt = self.connection.prepare(query)?;
+        let mut iter = stmt.query_map([], |row| {
+            Ok(AccountDisplay {
+                account_id: row.get(0)?,
+                display_name: row.get(1)?,
+                balance: row.get(2)?,
+            })
+        })?;
+
+        let mut ret: Vec<AccountDisplay> = vec![];
+        for c in iter {
+            ret.push(c.unwrap());
+        }
+
+        Ok(ret)
     }
 
     pub fn get_category_display_list(

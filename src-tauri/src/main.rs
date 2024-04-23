@@ -197,6 +197,23 @@ fn get_category_display_list(
 }
 
 #[tauri::command]
+fn get_account_display_list(
+    ts: tauri::State<State>,
+) -> ResultWrapped<Vec<AccountDisplay>, String> {
+    let conn = match ts.db.lock() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
+    };
+
+    let ret = match conn.get_account_display_list() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
+    };
+
+    ResultWrapped::ok(ret)
+}
+
+#[tauri::command]
 fn import(acc: i64, ts: tauri::State<State>) -> ResultWrapped<(), String> {
     let file_path_buf = match dialog::blocking::FileDialogBuilder::new()
         .add_filter("CSV", &["csv"])
@@ -267,6 +284,7 @@ fn main() {
             get_unassigned,
             get_category_id,
             get_category_display_list,
+            get_account_display_list,
             file_dialog,
             import,
         ])

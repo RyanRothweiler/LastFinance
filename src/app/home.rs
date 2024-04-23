@@ -12,9 +12,9 @@ use crate::app::error_modal;
 use data::account::*;
 use data::ResultWrapped;
 
-async fn get_account_list() -> Vec<Account> {
-    let ret_js: JsValue = super::invoke("get_all_accounts", JsValue::NULL).await;
-    let ret: ResultWrapped<Vec<Account>, String> = from_value(ret_js).unwrap();
+async fn get_account_list() -> Vec<AccountDisplay> {
+    let ret_js: JsValue = super::invoke("get_account_display_list", JsValue::NULL).await;
+    let ret: ResultWrapped<Vec<AccountDisplay>, String> = from_value(ret_js).unwrap();
     return ret.res.unwrap();
 }
 
@@ -22,7 +22,7 @@ async fn get_account_list() -> Vec<Account> {
 pub fn Home() -> impl IntoView {
     let global_state = expect_context::<RwSignal<super::GlobalState>>();
 
-    let accounts = create_signal::<Vec<Account>>(vec![]);
+    let accounts = create_signal::<Vec<AccountDisplay>>(vec![]);
     let account_res = create_resource(
         || (),
         move |_| async move {
@@ -194,11 +194,11 @@ pub fn Home() -> impl IntoView {
                           <div class="row">
 
                             <div class="col">
-                                <h1>{val.display_name}</h1>
+                                <h4>{val.display_name}</h4>
                             </div>
 
                             <div class="col text-end">
-                                <h1>"balance here"</h1>
+                                <h1>{data::amount_to_display(val.balance)}</h1>
                             </div>
 
                           </div>
@@ -223,7 +223,7 @@ pub fn Home() -> impl IntoView {
                                      acc: i64,
                                  }
                                  let args = to_value(&Args {
-                                     acc: val.id,
+                                     acc: val.account_id,
                                  })
                                  .unwrap();
                                  let ret_js = super::invoke("import", args).await;

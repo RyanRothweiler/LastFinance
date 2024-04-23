@@ -120,6 +120,23 @@ fn get_transaction_list_display() {
     test_remove_db(function!(), db);
 }
 
+#[test]
+fn get_account_display_list() {
+    let db = test_setup_db(function!());
+
+    db.insert(Account::new("first")).unwrap();
+
+    db.import("test_input/month_daily_transactions.csv", 1)
+        .unwrap();
+
+    let account_list = db.get_account_display_list().unwrap();
+
+    assert_eq!(account_list.len(), 1);
+    assert_eq!(account_list[0].balance, 1101758);
+
+    test_remove_db(function!(), db);
+}
+
 // TODO add start and end time testing here.
 // Add testing to handle these cases
 // - Categories for which there are no transacions
@@ -171,7 +188,6 @@ fn get_category_display_list() {
 fn import() {
     let db = test_setup_db(function!());
 
-    let dir = std::env::current_dir().unwrap();
     db.import("test_input/month_daily_transactions.csv", 0)
         .unwrap();
 
