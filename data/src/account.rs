@@ -23,3 +23,10 @@ pub struct AccountDisplay {
     pub display_name: String,
     pub balance: i64,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct AccountHistoryEntry {
+    pub account_id: i64,
+    pub display_name: String,
+    pub running_balance: i64,
+}

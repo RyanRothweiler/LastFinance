@@ -125,7 +125,6 @@ fn get_account_display_list() {
     let db = test_setup_db(function!());
 
     db.insert(Account::new("first")).unwrap();
-
     db.import("test_input/month_daily_transactions.csv", 1)
         .unwrap();
 
@@ -133,6 +132,24 @@ fn get_account_display_list() {
 
     assert_eq!(account_list.len(), 1);
     assert_eq!(account_list[0].balance, 1101758);
+
+    test_remove_db(function!(), db);
+}
+
+#[test]
+fn get_account_history() {
+    let db = test_setup_db(function!());
+
+    db.insert(Account::new("first")).unwrap();
+    db.import("test_input/month_daily_transactions.csv", 1)
+        .unwrap();
+
+    let entries = db.get_account_history(1).unwrap();
+
+    assert_eq!(entries.len(), 31);
+    assert_eq!(entries[0].running_balance, -11734);
+    assert_eq!(entries[1].running_balance, 53126);
+    assert_eq!(entries[2].running_balance, 579788);
 
     test_remove_db(function!(), db);
 }

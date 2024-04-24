@@ -235,6 +235,41 @@ impl Database {
         Ok(ret)
     }
 
+    pub fn get_account_history(
+        &self,
+        account_id: i64,
+    ) -> Result<Vec<AccountHistoryEntry>, rusqlite::Error> {
+        let query = format!(
+            "
+            SELECT 
+				        accounts.rowid,
+				        accounts.display_name,
+				        sum(transactions.amount) over (order by date asc) as running_total
+            from accounts
+            left join transactions on transactions.account_id = accounts.rowid
+			      where accounts.rowid = {}
+			      order by date asc
+            ",
+            account_id
+        );
+
+        let mut stmt = self.connection.prepare(&query)?;
+        let mut iter = stmt.query_map([], |row| {
+            Ok(AccountHistoryEntry {
+                account_id: row.get(0)?,
+                display_name: row.get(1)?,
+                running_balance: row.get(2)?,
+            })
+        })?;
+
+        let mut ret: Vec<AccountHistoryEntry> = vec![];
+        for c in iter {
+            ret.push(c.unwrap());
+        }
+
+        Ok(ret)
+    }
+
     pub fn get_category_display_list(
         &self,
         unix_start: i64,
