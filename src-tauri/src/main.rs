@@ -197,15 +197,31 @@ fn get_category_display_list(
 }
 
 #[tauri::command]
-fn get_account_display_list(
-    ts: tauri::State<State>,
-) -> ResultWrapped<Vec<AccountDisplay>, String> {
+fn get_account_display_list(ts: tauri::State<State>) -> ResultWrapped<Vec<AccountDisplay>, String> {
     let conn = match ts.db.lock() {
         Ok(v) => v,
         Err(v) => return ResultWrapped::error("Error locking db".to_string()),
     };
 
     let ret = match conn.get_account_display_list() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
+    };
+
+    ResultWrapped::ok(ret)
+}
+
+#[tauri::command]
+fn get_account_history(
+    acid: i64,
+    ts: tauri::State<State>,
+) -> ResultWrapped<Vec<AccountHistoryEntry>, String> {
+    let conn = match ts.db.lock() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
+    };
+
+    let ret = match conn.get_account_history(acid) {
         Ok(v) => v,
         Err(v) => return ResultWrapped::error(format!("{:?}", v)),
     };
@@ -285,6 +301,7 @@ fn main() {
             get_category_id,
             get_category_display_list,
             get_account_display_list,
+            get_account_history,
             file_dialog,
             import,
         ])

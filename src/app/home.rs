@@ -20,18 +20,38 @@ async fn get_account_list() -> Vec<AccountDisplay> {
     return ret.res.unwrap();
 }
 
+async fn get_account_history(account_id: i64) -> Vec<AccountHistoryEntry> {
+    #[derive(Serialize, Deserialize)]
+    struct Args {
+        acid: i64,
+    }
+    let args = to_value(&Args { acid: account_id }).unwrap();
+
+    let ret_js: JsValue = super::invoke("get_account_history", args).await;
+    let ret: ResultWrapped<Vec<AccountHistoryEntry>, String> = from_value(ret_js).unwrap();
+    return ret.res.unwrap();
+}
+
 struct MyData {
     x: f64,
     y1: f64,
-    y2: f64,
 }
 
 #[component]
 pub fn Home() -> impl IntoView {
     let global_state = expect_context::<RwSignal<super::GlobalState>>();
 
+    let account_history = create_signal::<Vec<AccountHistoryEntry>>(vec![]);
+    create_resource(
+        || (),
+        move |_| async move {
+            let list = get_account_history(1).await;
+            account_history.1.set(list);
+        },
+    );
+
     let accounts = create_signal::<Vec<AccountDisplay>>(vec![]);
-    let account_res = create_resource(
+    create_resource(
         || (),
         move |_| async move {
             let list = get_account_list().await;
@@ -112,16 +132,8 @@ pub fn Home() -> impl IntoView {
     };
 
     let (data_get, data_set) = create_signal(vec![
-        MyData {
-            x: 0.0,
-            y1: 0.0,
-            y2: 0.0,
-        },
-        MyData {
-            x: 10.0,
-            y1: 20.0,
-            y2: 15.0,
-        },
+        MyData { x: 0.0, y1: 0.0 },
+        MyData { x: 10.0, y1: 20.0 },
     ]);
 
     view! {
@@ -129,7 +141,7 @@ pub fn Home() -> impl IntoView {
 
     <Chart
         // Sets the width and height
-        aspect_ratio=AspectRatio::from_outer_ratio(600.0, 300.0)
+        aspect_ratio=AspectRatio::from_outer_ratio(1000.0, 300.0)
 
         // Decorate our chart
         top = RotatedLabel::middle("My garden")
@@ -147,9 +159,9 @@ pub fn Home() -> impl IntoView {
         tooltip = Tooltip::left_cursor()
 
         // Describe the data
-        series = Series::new(|data: &MyData| data.x)
-            .line(Line::new(|data: &MyData| data.y1).with_name("butterflies"))
-        data = data_get
+        series = Series::new(|data: &AccountHistoryEntry| data.date as f64)
+            .line(Line::new(|data: &AccountHistoryEntry| data::cents_to_dollars(data.running_balance)).with_name("balance"))
+        data = account_history.0
     />
 
 

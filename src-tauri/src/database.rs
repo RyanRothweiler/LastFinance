@@ -244,7 +244,8 @@ impl Database {
             SELECT 
 				        accounts.rowid,
 				        accounts.display_name,
-				        sum(transactions.amount) over (order by date asc) as running_total
+				        sum(transactions.amount) over (order by date asc) as running_total,
+                transactions.date
             from accounts
             left join transactions on transactions.account_id = accounts.rowid
 			      where accounts.rowid = {}
@@ -259,6 +260,7 @@ impl Database {
                 account_id: row.get(0)?,
                 display_name: row.get(1)?,
                 running_balance: row.get(2)?,
+                date: row.get(3)?,
             })
         })?;
 

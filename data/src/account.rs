@@ -29,4 +29,5 @@ pub struct AccountHistoryEntry {
     pub account_id: i64,
     pub display_name: String,
     pub running_balance: i64,
+    pub date: i64,
 }
