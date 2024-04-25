@@ -14,41 +14,17 @@ use crate::app::error_modal;
 use data::account::*;
 use data::ResultWrapped;
 
+mod account_box;
+
 async fn get_account_list() -> Vec<AccountDisplay> {
     let ret_js: JsValue = super::invoke("get_account_display_list", JsValue::NULL).await;
     let ret: ResultWrapped<Vec<AccountDisplay>, String> = from_value(ret_js).unwrap();
     return ret.res.unwrap();
 }
 
-async fn get_account_history(account_id: i64) -> Vec<AccountHistoryEntry> {
-    #[derive(Serialize, Deserialize)]
-    struct Args {
-        acid: i64,
-    }
-    let args = to_value(&Args { acid: account_id }).unwrap();
-
-    let ret_js: JsValue = super::invoke("get_account_history", args).await;
-    let ret: ResultWrapped<Vec<AccountHistoryEntry>, String> = from_value(ret_js).unwrap();
-    return ret.res.unwrap();
-}
-
-struct MyData {
-    x: f64,
-    y1: f64,
-}
-
 #[component]
 pub fn Home() -> impl IntoView {
     let global_state = expect_context::<RwSignal<super::GlobalState>>();
-
-    let account_history = create_signal::<Vec<AccountHistoryEntry>>(vec![]);
-    create_resource(
-        || (),
-        move |_| async move {
-            let list = get_account_history(1).await;
-            account_history.1.set(list);
-        },
-    );
 
     let accounts = create_signal::<Vec<AccountDisplay>>(vec![]);
     create_resource(
@@ -103,66 +79,8 @@ pub fn Home() -> impl IntoView {
         });
     };
 
-    let fund_account = move |account_id: i64| {
-        spawn_local(async move {
-            #[derive(Serialize, Deserialize)]
-            struct Args {
-                id: i64,
-                cents: i64,
-            }
-
-            let args = to_value(&Args {
-                id: account_id,
-                cents: 1000,
-            })
-            .unwrap();
-            let ret_js = super::invoke("fund_account", args).await;
-            let ret: ResultWrapped<(), String> = from_value(ret_js).unwrap();
-            match ret.res {
-                Err(v) => super::error_modal::show_error(v, &global_state),
-                _ => {}
-            }
-
-            let account_list = get_account_list().await;
-            accounts.1.set(account_list);
-
-            // update unassigned
-            //unassigned_sig.update(|count: &mut f64| *count += 1.0 );
-        });
-    };
-
-    let (data_get, data_set) = create_signal(vec![
-        MyData { x: 0.0, y1: 0.0 },
-        MyData { x: 10.0, y1: 20.0 },
-    ]);
-
     view! {
         <div class="container-fluid">
-
-    <Chart
-        // Sets the width and height
-        aspect_ratio=AspectRatio::from_outer_ratio(1000.0, 300.0)
-
-        // Decorate our chart
-        top = RotatedLabel::middle("My garden")
-        left = TickLabels::aligned_floats()
-        right = leptos_chartistry::Legend::end()
-        bottom = TickLabels::aligned_floats()
-        inner = [
-            AxisMarker::left_edge().into_inner(),
-            AxisMarker::bottom_edge().into_inner(),
-            XGridLine::default().into_inner(),
-            YGridLine::default().into_inner(),
-            XGuideLine::over_data().into_inner(),
-            YGuideLine::over_mouse().into_inner(),
-        ]
-        tooltip = Tooltip::left_cursor()
-
-        // Describe the data
-        series = Series::new(|data: &AccountHistoryEntry| data.date as f64)
-            .line(Line::new(|data: &AccountHistoryEntry| data::cents_to_dollars(data.running_balance)).with_name("balance"))
-        data = account_history.0
-    />
 
 
           <div class="row">
@@ -245,68 +163,13 @@ pub fn Home() -> impl IntoView {
              accounts.0.get().into_iter().map(
              |val| {
                  view!{
-
-                        <div class="col-md-6">
-                        <div class="bg-secondary-subtle rounded-3 p-3 px-4 my-3">
-
-                        <div class="container-fluid">
-                          <div class="row">
-
-                            <div class="col">
-                                <h4>{val.display_name}</h4>
-                            </div>
-
-                            <div class="col text-end">
-                                <h1>{data::amount_to_display(val.balance)}</h1>
-                            </div>
-
-                          </div>
-                        </div>
-
-                        <div class="container-fluid">
-                            <div class="row">
-                                <div class="col-sm-2">
-                                </div>
-                                <div clss="col">
-                                </div>
-                            </div>
-                        </div>
-
-
-
-                         <button class="btn btn-outline-secondary btn-sm" type="submit"
-                         on:click = move |ev| {
-                             spawn_local(async move {
-                                 #[derive(Serialize, Deserialize)]
-                                 struct Args {
-                                     acc: i64,
-                                 }
-                                 let args = to_value(&Args {
-                                     acc: val.account_id,
-                                 })
-                                 .unwrap();
-                                 let ret_js = super::invoke("import", args).await;
-                                 let ret: ResultWrapped<(), String> = from_value(ret_js).unwrap();
-                                 match ret.res {
-                                     Err(v) => {
-                                         error_modal::show_error(v, &global_state);
-                                     }
-                                     Ok(()) => {}
-                                 }
-
-                             });
-                         }
-                         >
-                             "Import Transactions CSV"
-                         </button>
-
-                         </div>
-                         </div>
-                 }
+                     <account_box::AccountBox account=val/>
+                }
              }
              ).collect_view()
-        }
-        }
+         }
+         }
+
         </div>
         </div>
 
