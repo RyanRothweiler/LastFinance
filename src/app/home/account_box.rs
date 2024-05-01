@@ -70,14 +70,36 @@ pub fn AccountBox(account: AccountDisplay) -> impl IntoView {
             </div>
         </div>
 
+        <style>"
+            .my-theme {
+                /* Use 'fill' for filling text colour */
+                fill: #ddd;
+
+                /* Some elements (e.g., legend and tooltips) use HTML so we
+                    still still need to set 'color' */
+                color: #ddd;
+            }
+
+            /* We can set stroke (and fill) directly too */
+            .my-theme ._chartistry_grid_line_x {
+                stroke: #505050;
+            }
+
+            /*data::cents_to_dollars(data.running_balance) * 0.001 The tooltip uses inline CSS styles and so must be overridden */
+            .my-theme ._chartistry_tooltip {
+                border: 1px solid #fff !important;
+                background-color: #333 !important;
+            }
+
+        "</style>
+
+        <div class="my-theme">
         <Chart
             // Sets the width and height
-            aspect_ratio=AspectRatio::from_outer_ratio(1000.0, 300.0)
+            aspect_ratio = AspectRatio::from_env_width_apply_ratio(3.0)
 
             // Decorate our chart
             top = RotatedLabel::middle("Balance")
-            left = TickLabels::aligned_floats()
-            bottom = TickLabels::aligned_floats()
             inner = [
                 AxisMarker::left_edge().into_inner(),
                 AxisMarker::bottom_edge().into_inner(),
@@ -90,9 +112,14 @@ pub fn AccountBox(account: AccountDisplay) -> impl IntoView {
 
             // Describe the data
             series = Series::new(|data: &AccountHistoryEntry| data.date as f64)
-                .line(Line::new(|data: &AccountHistoryEntry| data::cents_to_dollars(data.running_balance)).with_name("balance"))
+                .line(Line::new(|data: &AccountHistoryEntry| {
+                    let d = data::cents_to_dollars(data.running_balance) * 0.001;
+                    log!("testing {d}");
+                    return data::cents_to_dollars(data.running_balance) * 0.001;
+        }).with_name("balance").with_width(2.0))
             data = account_history.0
         />
+        </div>
 
 
          <button class="btn btn-outline-secondary btn-sm" type="submit"
