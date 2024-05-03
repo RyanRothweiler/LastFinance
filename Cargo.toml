@@ -16,6 +16,7 @@ leptos_router = { version = "0.6.10", features = ["csr"] }
 time = { version = "0.3.35", features = ['parsing', 'formatting']}
 chrono = "0.4.38"
 leptos-chartistry = "0.1.5"
+gloo-timers = "0.3.0"
 
 [workspace]
 members = ["src-tauri", "data"]

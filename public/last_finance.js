@@ -1,15 +1,32 @@
-//import { open } from "@tauri-apps/api/dialog";
-//import { readTextFile } from "@tauri-apps/api/fs";
 
 export function show_error() {
 		$('#exampleModal').modal('show');
 }
 
-/*
-export const read_file_contents = async () => {
-		const selectedPath = await open ({
-				multiple: false,
-				title: "Do file thing mang",
-		});
+export function build_graph(element_id, dat) {
+
+		var myChart = echarts.init(document.getElementById(element_id));
+
+		var data = [];
+		for (let i = 0; i < dat.length; i++) {
+				data.push([i, dat[i]]);
+		}
+
+		console.log(data);
+
+		const option = {
+				tooltip: {
+						trigger: 'axis',
+				},
+				xAxis: { },
+				yAxis: { },
+				series: [
+						{
+								data: data,
+								type: 'line'
+						}
+				]
+		};
+
+		myChart.setOption(option);
 }
-*/

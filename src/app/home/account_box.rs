@@ -17,6 +17,8 @@ use data::ResultWrapped;
 use crate::app::invoke;
 use crate::app::GlobalState;
 
+use gloo_timers::future::TimeoutFuture;
+
 async fn get_account_history(account_id: i64) -> Vec<AccountHistoryEntry> {
     #[derive(Serialize, Deserialize)]
     struct Args {
@@ -36,11 +38,34 @@ pub fn AccountBox(account: AccountDisplay) -> impl IntoView {
     let account_history = create_signal::<Vec<AccountHistoryEntry>>(vec![]);
     create_resource(
         || (),
-        move |_| async move {
-            let list = get_account_history(account.account_id).await;
-            account_history.1.set(list);
+        move |_| {
+            let div_id = format!("graph_{0}", account.account_id);
+            async move {
+                let list = get_account_history(account.account_id).await;
+                //account_history.1.set(list);
+
+                TimeoutFuture::new(100).await;
+
+                // Build data array. Can get this array directly from the database
+                let mut data: Vec<f64> = vec![];
+                for ent in list {
+                    data.push(data::cents_to_dollars(ent.running_balance));
+                }
+
+                crate::app::js::build_graph(div_id, data);
+            }
         },
     );
+
+    // build graph data
+    create_resource(
+        || (),
+        move |_| async move {
+            TimeoutFuture::new(100).await;
+        },
+    );
+
+    let graph_div_id: String = format!("graph_{0}", account.account_id);
 
     view! {
         <div class="col-md-6">
@@ -70,57 +95,8 @@ pub fn AccountBox(account: AccountDisplay) -> impl IntoView {
             </div>
         </div>
 
-        <style>"
-            .my-theme {
-                /* Use 'fill' for filling text colour */
-                fill: #ddd;
-
-                /* Some elements (e.g., legend and tooltips) use HTML so we
-                    still still need to set 'color' */
-                color: #ddd;
-            }
-
-            /* We can set stroke (and fill) directly too */
-            .my-theme ._chartistry_grid_line_x {
-                stroke: #505050;
-            }
-
-            /*data::cents_to_dollars(data.running_balance) * 0.001 The tooltip uses inline CSS styles and so must be overridden */
-            .my-theme ._chartistry_tooltip {
-                border: 1px solid #fff !important;
-                background-color: #333 !important;
-            }
-
-        "</style>
-
-        <div class="my-theme">
-        <Chart
-            // Sets the width and height
-            aspect_ratio = AspectRatio::from_env_width_apply_ratio(3.0)
-
-            // Decorate our chart
-            top = RotatedLabel::middle("Balance")
-            inner = [
-                AxisMarker::left_edge().into_inner(),
-                AxisMarker::bottom_edge().into_inner(),
-                XGridLine::default().into_inner(),
-                YGridLine::default().into_inner(),
-                XGuideLine::over_data().into_inner(),
-                YGuideLine::over_mouse().into_inner(),
-            ]
-            tooltip = Tooltip::left_cursor()
-
-            // Describe the data
-            series = Series::new(|data: &AccountHistoryEntry| data.date as f64)
-                .line(Line::new(|data: &AccountHistoryEntry| {
-                    let d = data::cents_to_dollars(data.running_balance) * 0.001;
-                    log!("testing {d}");
-                    return data::cents_to_dollars(data.running_balance) * 0.001;
-        }).with_name("balance").with_width(2.0))
-            data = account_history.0
-        />
+        <div id={graph_div_id.clone()} style="width: max-width; height:400px;">
         </div>
-
 
          <button class="btn btn-outline-secondary btn-sm" type="submit"
          on:click = move |ev| {
