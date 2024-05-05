@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use serde::{Deserialize, Serialize};
 
 use num_format::{Locale, ToFormattedString};
@@ -24,6 +26,8 @@ pub fn amount_to_display(cents: i64) -> String {
 // Necessary because wasm_bindgen requires serde to serialize between javascript and rust
 // That is my guess atleast wasm_bindget from_value doesn't work on regular results
 // so we need to wrap the result.
+// T is ok
+// V is error
 #[derive(Serialize, Deserialize)]
 pub struct ResultWrapped<T, V> {
     pub res: std::result::Result<T, V>,
@@ -60,4 +64,9 @@ impl<T> OptionWrapped<T> {
             res: std::option::Option::None,
         }
     }
+}
+
+pub struct DatabaseInfo {
+    pub file_name: String,
+    pub file_path: String,
 }

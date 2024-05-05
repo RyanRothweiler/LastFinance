@@ -14,10 +14,12 @@ macro_rules! function {
 }
 
 fn test_setup_db(name: &str) -> Database {
-    let db_dir = &format!("C:/Digital Archive/{}_db.db3", name);
+    let file_name = format!("{name}_db");
+    let db_dir = "C:/Digital Archive";
+
     let _ = std::fs::remove_file(db_dir);
 
-    let db = Database::new(db_dir);
+    let db = Database::new(db_dir, &file_name);
     return db;
 }
 

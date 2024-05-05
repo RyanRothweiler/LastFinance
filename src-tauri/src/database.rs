@@ -26,14 +26,19 @@ pub enum OrderBy {
 
 pub struct Database {
     connection: Connection,
+    pub file_name: String,
+    pub folder_dir: String,
 }
 
 impl Database {
-    pub fn new(path: &str) -> Database {
+    pub fn new(folder_dir: &str, file_name: &str) -> Database {
+        let path = format!("{folder_dir}/{file_name}.db3");
         let connection = Connection::open(path).unwrap();
 
         let db = Database {
             connection: connection,
+            file_name: file_name.to_string(),
+            folder_dir: folder_dir.to_string(),
         };
 
         fn setup_table<T: TableActions>(db: &Database) {
@@ -136,12 +141,12 @@ impl Database {
     pub fn get_transaction_list_display(&self) -> Result<TransactionDisplayList, rusqlite::Error> {
         let query = "
             SELECT 
-                payee, 
-                amount, 
-                date, 
-                account_id,
-                ifnull(categories.display_name, '') as category_display_name,
-                ifnull(accounts.display_name, '') as account_display_name
+            payee, 
+        amount, 
+        date, 
+        account_id,
+        ifnull(categories.display_name, '') as category_display_name,
+        ifnull(accounts.display_name, '') as account_display_name
             from transactions 
             left join categories on transactions.category_id = categories.ROWID
             left join accounts on transactions.account_id = accounts.ROWID
@@ -194,13 +199,13 @@ impl Database {
         let accounts = self.get_all::<Account>(OrderBy::None)?;
         let mut accounts_total = 0;
         for a in accounts {
-            accounts_total += a.balance;
+        accounts_total += a.balance;
         }
 
         let categories = self.get_all::<Category>(OrderBy::None)?;
         let mut categories_total = 0;
         for c in categories {
-            categories_total += c.balance;
+        categories_total += c.balance;
         }
 
         return Ok(accounts_total - categories_total);
@@ -209,14 +214,14 @@ impl Database {
 
     pub fn get_account_display_list(&self) -> Result<Vec<AccountDisplay>, rusqlite::Error> {
         let query = "
-              SELECT 
-                accounts.rowid,
-                accounts.display_name,
-                sum(amount) as balance
-                    from accounts
-                    left join transactions on transactions.account_id = accounts.rowid           
-              group by account_id
-            ";
+            SELECT 
+            accounts.rowid,
+            accounts.display_name,
+            sum(amount) as balance
+                from accounts
+                left join transactions on transactions.account_id = accounts.rowid           
+                group by account_id
+                ";
 
         let mut stmt = self.connection.prepare(query)?;
         let mut iter = stmt.query_map([], |row| {
@@ -242,14 +247,14 @@ impl Database {
         let query = format!(
             "
             SELECT 
-				        accounts.rowid,
-				        accounts.display_name,
-				        sum(transactions.amount) over (order by date asc) as running_total,
-                transactions.date
+            accounts.rowid,
+            accounts.display_name,
+            sum(transactions.amount) over (order by date asc) as running_total,
+            transactions.date
             from accounts
             left join transactions on transactions.account_id = accounts.rowid
-			      where accounts.rowid = {}
-			      order by date asc
+            where accounts.rowid = {}
+            order by date asc
             ",
             account_id
         );
@@ -280,10 +285,10 @@ impl Database {
         let query = format!(
             "
             SELECT 
-                id, 
-                display_name,
-                coalesce(avg(amount), 0) as transactions_average,
-                coalesce(sum(amount), 0) as transactions_total
+            id, 
+            display_name,
+            coalesce(avg(amount), 0) as transactions_average,
+            coalesce(sum(amount), 0) as transactions_total
             from categories 
             left join transactions on transactions.category_id = categories.rowid
             where coalesce(transactions.date, 0) between {unix_start} and {unix_end}

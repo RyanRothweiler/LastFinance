@@ -12,8 +12,7 @@ use rusqlite::Result;
 use data::account::*;
 use data::category::*;
 use data::transaction::*;
-use data::OptionWrapped;
-use data::ResultWrapped;
+use data::{DatabaseInfo, OptionWrapped, ResultWrapped};
 
 use database::{Database, OrderBy};
 
@@ -282,9 +281,22 @@ fn file_dialog() -> OptionWrapped<String> {
     };
 }
 
+#[tauri::command]
+fn get_db_info(ts: tauri::State<State>) -> ResultWrapped<DatabaseInfo, String> {
+    let db = match ts.db.lock() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
+    };
+
+    return ResultWrapped::ok(DatabaseInfo {
+        file_name: db.file_name.clone(),
+        file_path: db.folder_dir.clone(),
+    });
+}
+
 fn main() {
     let state = State {
-        db: Mutex::new(Database::new("C:/Digital Archive/db.db3")),
+        db: Mutex::new(Database::new("C:/Digital Archive", "db")),
     };
 
     tauri::Builder::default()
