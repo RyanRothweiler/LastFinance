@@ -86,9 +86,9 @@ pub fn Home() -> impl IntoView {
           <div class="row">
 
             <div class="col">
-                <h2 class="text-secondary">
+                <h1>
                     "Accounts"
-                </h2>
+                </h1>
             </div>
             <div class="col text-end">
                 <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#account_create">

@@ -22,9 +22,9 @@ pub fn Nav() -> impl IntoView {
 
     view! {
         <div class="side_nav">
-            <h6 class="side_nav_button"><a href="/">Overview</a></h6>
-            <h6 class="side_nav_button"><a href="/categories">Categories</a></h6>
-            <h6 class="side_nav_button"><a href="/transactions">Transactions</a></h6>
+            <p class="side_nav_button"><a href="/">Overview</a></p>
+            <p class="side_nav_button"><a href="/categories">Categories</a></p>
+            <p class="side_nav_button"><a href="/transactions">Transactions</a></p>
         </div>
     }
 }

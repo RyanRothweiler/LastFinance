@@ -69,7 +69,7 @@ pub fn AccountBox(account: AccountDisplay) -> impl IntoView {
 
     view! {
         <div class="col-md-6">
-        <div class="bg-secondary-subtle rounded-3 p-3 px-4 my-3">
+        <div class="bg-200 rounded-3 p-3 px-4 my-3">
 
 
         <div class="container-fluid">

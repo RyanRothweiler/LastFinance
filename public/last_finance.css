@@ -71,3 +71,6 @@ a:link, a:visited, a:hover, a:active {
 		display: flex;
 }
 
+.bg-200 {
+		background-color: var(--color-surface-200);
+}
