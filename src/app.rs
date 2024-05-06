@@ -50,14 +50,15 @@ pub fn App() -> impl IntoView {
     view! {
         <html data-bs-theme="dark">
         <main>
+
         <Router>
+            
 
-            <div class="container-fluid">
+            <div class="flex_holder">
+                <nav::Nav/>
 
-                <div class="row">
-                    <nav::Nav/>
-
-                    <div class="p-5">
+                <div class="page_content">
+                    <div class="p-4">
                         <Routes>
                             <Route path="/" view=home::Home/>
                             <Route path="/transactions" view=transactions::Transactions/>
@@ -69,6 +70,8 @@ pub fn App() -> impl IntoView {
                     </div>
                 </div>
 
+
+                
             </div>
 
         </Router>

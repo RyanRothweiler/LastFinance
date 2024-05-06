@@ -21,20 +21,10 @@ pub fn Nav() -> impl IntoView {
     );
 
     view! {
-        <nav class="navbar navbar-expand-lg bg-body-tertiary">
-            <div class="container-fluid">
-                <ul class="nav justify-content-center">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/categories">Categories</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/transactions">Transactions</a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
+        <div class="side_nav">
+            <h6 class="side_nav_button"><a href="/">Overview</a></h6>
+            <h6 class="side_nav_button"><a href="/categories">Categories</a></h6>
+            <h6 class="side_nav_button"><a href="/transactions">Transactions</a></h6>
+        </div>
     }
 }

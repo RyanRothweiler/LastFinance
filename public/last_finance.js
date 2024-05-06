@@ -12,8 +12,6 @@ export function build_graph(element_id, dat) {
 				data.push([i, dat[i]]);
 		}
 
-		console.log(data);
-
 		const option = {
 				tooltip: {
 						trigger: 'axis',

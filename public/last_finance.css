@@ -1,3 +1,41 @@
+
+:root {
+
+		/** CSS DARK THEME PRIMARY COLORS */ 
+		--color-primary-100:  #0e46a3;
+		--color-primary-200:  #3c58ad;
+		--color-primary-300:  #596bb8;
+		--color-primary-400:  #727ec2;
+		--color-primary-500:  #8a92cc;
+		--color-primary-600:  #a2a7d7;  
+
+		/** CSS DARK THEME SURFACE COLORS */ 
+		--color-surface-100:  #121212;
+		--color-surface-200:  #282828;
+		--color-surface-300:  #3f3f3f;
+		--color-surface-400:  #575757;
+		--color-surface-500:  #717171;
+		--color-surface-600:  #8b8b8b;  
+
+		/** CSS DARK THEME MIXED SURFACE COLORS */ 
+		--color-surface-mixed-100:  #16171f;
+		--color-surface-mixed-200:  #2b2c34;
+		--color-surface-mixed-300:  #42434a;
+		--color-surface-mixed-400:  #5a5b61;
+		--color-surface-mixed-500:  #737479;
+		--color-surface-mixed-600:  #8e8e93;  
+
+}
+
+html {
+		background-color: var(--color-surface-100);
+}
+
+a:link, a:visited, a:hover, a:active {
+		text-decoration: none;
+		color: var(--bs-body-color);
+}
+
 .highlight {
 		background-color: grey !important;
 }
@@ -6,3 +44,30 @@
 		vertical-align: -.25em;
 		margin-right: 7px;
 }
+
+.side_nav {
+		width: 350px;
+		background-color: var(--color-surface-300);
+		padding: 15px;
+}
+
+.side_nav_button:hover {
+		background-color: var(--color-surface-mixed-400);
+}
+
+.side_nav_button {
+		padding-left: 10px;
+		padding-top: 5px;
+		padding-bottom: 5px;
+
+		border-radius: 5px;
+}
+
+.page_content {
+		width: 100%;
+}
+
+.flex_holder {
+		display: flex;
+}
+
