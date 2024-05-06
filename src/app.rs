@@ -53,8 +53,8 @@ pub fn App() -> impl IntoView {
 
         <Router>
             
-
-            <div class="flex_holder">
+            <body>
+            <div class="flex_holder app_container">
                 <nav::Nav/>
 
                 <div class="page_content">
@@ -69,10 +69,8 @@ pub fn App() -> impl IntoView {
 
                     </div>
                 </div>
-
-
-                
             </div>
+            </body>
 
         </Router>
         </main>
