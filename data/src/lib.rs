@@ -66,6 +66,7 @@ impl<T> OptionWrapped<T> {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone)]
 pub struct DatabaseInfo {
     pub file_name: String,
     pub file_path: String,

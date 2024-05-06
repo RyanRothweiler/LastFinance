@@ -316,6 +316,7 @@ fn main() {
             get_account_history,
             file_dialog,
             import,
+            get_db_info,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
