@@ -31,8 +31,11 @@ pub struct Database {
 }
 
 impl Database {
+    // TODO change this to path_buf?
     pub fn new(folder_dir: &str, file_name: &str) -> Database {
         let path = format!("{folder_dir}/{file_name}.db3");
+        println!("Opening DB {path}");
+
         let connection = Connection::open(path).unwrap();
 
         let db = Database {
@@ -41,20 +44,24 @@ impl Database {
             folder_dir: folder_dir.to_string(),
         };
 
-        fn setup_table<T: TableActions>(db: &Database) {
-            let table_name = &T::get_table_name();
+        // Create schema if needed
+        {
+            fn setup_table<T: TableActions>(db: &Database) {
+                let table_name = &T::get_table_name();
 
-            if !db.table_exists(table_name) {
-                let query = format!("CREATE TABLE {} ( {} )", table_name, T::get_table_schema());
-                db.connection.execute(&query, ()).unwrap();
-                println!("Created table {}", table_name);
+                if !db.table_exists(table_name) {
+                    let query =
+                        format!("CREATE TABLE {} ( {} )", table_name, T::get_table_schema());
+                    db.connection.execute(&query, ()).unwrap();
+                    println!("Created table {}", table_name);
+                }
             }
-        }
 
-        setup_table::<Category>(&db);
-        setup_table::<Account>(&db);
-        setup_table::<Transaction>(&db);
-        setup_table::<CategoryTransfer>(&db);
+            setup_table::<Category>(&db);
+            setup_table::<Account>(&db);
+            setup_table::<Transaction>(&db);
+            setup_table::<CategoryTransfer>(&db);
+        }
 
         return db;
     }

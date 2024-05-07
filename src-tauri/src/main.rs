@@ -266,18 +266,12 @@ fn file_dialog() -> OptionWrapped<String> {
         .pick_file()
     {
         Some(v) => v,
-        None => {
-            return OptionWrapped::none();
-        }
+        None => return OptionWrapped::none(),
     };
 
     match file_path_buf.as_path().to_str() {
-        Some(v) => {
-            return OptionWrapped::some(v.to_string());
-        }
-        None => {
-            return OptionWrapped::none();
-        }
+        Some(v) => return OptionWrapped::some(v.to_string()),
+        None => return OptionWrapped::none(),
     };
 }
 
@@ -292,6 +286,26 @@ fn get_db_info(ts: tauri::State<State>) -> ResultWrapped<DatabaseInfo, String> {
         file_name: db.file_name.clone(),
         file_path: db.folder_dir.clone(),
     });
+}
+
+#[tauri::command]
+fn create_db(ts: tauri::State<State>) -> ResultWrapped<(), String> {
+    let mut db = match ts.db.lock() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
+    };
+
+    let mut file_path_buf = match dialog::blocking::FileDialogBuilder::new().save_file() {
+        Some(v) => v,
+        None => return ResultWrapped::error("Error picking file path.".to_string()),
+    };
+
+    // TODO handle error
+    let file = file_path_buf.file_name().unwrap().to_str().unwrap();
+    let path = file_path_buf.parent().unwrap().to_str().unwrap();
+
+    *db = Database::new(path, file);
+    ResultWrapped::ok(())
 }
 
 fn main() {
@@ -317,6 +331,7 @@ fn main() {
             file_dialog,
             import,
             get_db_info,
+            create_db,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

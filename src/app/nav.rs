@@ -53,7 +53,20 @@ pub fn Nav() -> impl IntoView {
             </p>
 
             <button class="btn btn-outline-secondary btn-sm">Open New Database</button>
-            <button class="btn btn-outline-secondary btn-sm">Create New Database</button>
+            <button class="btn btn-outline-secondary btn-sm"
+                on:click = move |ev| {
+                    spawn_local(async move {
+                        let ret_js: JsValue = super::invoke("create_db", JsValue::NULL).await;
+
+                        // TODO handle error
+                        //let db_info: ResultWrapped<(), String> = from_value(ret_js).unwrap();
+                        //db_info_set.set(db_info.res.unwrap());
+                    });
+                }
+            >
+                Create New Database
+            </button>
+
             <hr></hr>
 
         </div>
