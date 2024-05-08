@@ -18,6 +18,7 @@ chrono = "0.4.38"
 leptos-chartistry = "0.1.5"
 gloo-timers = "0.3.0"
 directories = "5.0.1"
+serde_json = "1.0.116"
 
 [workspace]
 members = ["src-tauri", "data"]

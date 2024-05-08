@@ -1,5 +1,8 @@
 #![allow(unused_macros)]
 
+mod table_actions;
+use table_actions::TableActions;
+
 use rusqlite::{Connection, Result};
 
 use time::format_description::well_known::Iso8601;
@@ -7,14 +10,14 @@ use time::PrimitiveDateTime;
 
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
+use std::path::{Path, PathBuf};
 
 use data::account::*;
 use data::category::*;
 use data::category_transfer::CategoryTransfer;
 use data::transaction::*;
 
-mod table_actions;
-use table_actions::TableActions;
+use super::persistent_data::PersistentData;
 
 #[cfg(test)]
 mod tests;
@@ -32,16 +35,18 @@ pub struct Database {
 
 impl Database {
     // TODO change this to path_buf?
-    pub fn new(folder_dir: &str, file_name: &str) -> Database {
-        let path = format!("{folder_dir}/{file_name}.db3");
-        println!("Opening DB {path}");
+    pub fn new(file_path: PathBuf, persist_data: &mut PersistentData) -> Database {
+        let path_str: &str = file_path.to_str().unwrap();
+        println!("Opening DB {0}", path_str);
 
-        let connection = Connection::open(path).unwrap();
+        persist_data.set_last_db(path_str);
+
+        let connection = Connection::open(path_str).unwrap();
 
         let db = Database {
             connection: connection,
-            file_name: file_name.to_string(),
-            folder_dir: folder_dir.to_string(),
+            file_name: file_path.file_name().unwrap().to_str().unwrap().to_string(),
+            folder_dir: file_path.parent().unwrap().to_str().unwrap().to_string(),
         };
 
         // Create schema if needed

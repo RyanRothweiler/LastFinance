@@ -14,12 +14,16 @@ macro_rules! function {
 }
 
 fn test_setup_db(name: &str) -> Database {
-    let file_name = format!("{name}_db");
     let db_dir = "C:/Digital Archive";
 
+    // Remove any past existing db files
     let _ = std::fs::remove_file(db_dir);
 
-    let db = Database::new(db_dir, &file_name);
+    // Create path for new
+    let mut path = std::path::PathBuf::from(format!("{db_dir}/"));
+    path.push(format!("{name}_db.db3"));
+
+    let db = Database::new(path, &mut PersistentData::new_empty());
     return db;
 }
 
