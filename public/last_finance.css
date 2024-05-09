@@ -47,7 +47,7 @@ a:link, a:visited, a:hover, a:active {
 		background-color: grey !important;
 }
 
-.bi { 
+.bi {
 		vertical-align: -.25em;
 		margin-right: 7px;
 }
@@ -56,6 +56,15 @@ a:link, a:visited, a:hover, a:active {
 		width: 350px;
 		background-color: var(--color-surface-300);
 		padding: 15px;
+
+		display: flex;
+		flex-direction: column;
+}
+
+.side_nav_align_bottom {
+		display: inline-block;
+		margin-top: auto;
+		vertical-align: bottom;
 }
 
 .side_nav_button:hover {

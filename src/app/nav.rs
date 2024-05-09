@@ -38,49 +38,54 @@ pub fn Nav() -> impl IntoView {
             <p class="side_nav_button"><a href="/categories">Categories</a></p>
             <p class="side_nav_button"><a href="/transactions">Transactions</a></p>
 
-            <hr></hr>
 
-            <p class="text-body-secondary current_db_p"><strong>"Current Open Database"</strong></p>
-            <p class="text-body-secondary current_db_p">
-            {
-                move || db_info_get.get().file_name
-            }
-            </p>
-            <p class="text-body-secondary current_db_p fs-6">
-            {
-                move || db_info_get.get().file_path
-            }
-            </p>
+            <div class="side_nav_align_bottom">
+                <hr></hr>
 
-            <button class="btn btn-outline-secondary btn-sm"
-                on:click = move |ev|  {
-                    spawn_local(async move {
-
-                        let ret_js: JsValue = super::invoke("open_db", JsValue::NULL).await;
-                        super::js::reload_page();
-
-                        // TODO handle error
-                    });
+                <p class="text-body-secondary current_db_p"><strong>"Current Open Database"</strong></p>
+                <p class="text-body-secondary current_db_p">
+                {
+                    move || db_info_get.get().file_name
                 }
-            >
-                "Open New Database"
-            </button>
-            <button class="btn btn-outline-secondary btn-sm"
-                on:click = move |ev| {
-                    spawn_local(async move {
-                        let ret_js: JsValue = super::invoke("create_db", JsValue::NULL).await;
-                        super::js::reload_page();
-
-                        // TODO handle error
-                        //let db_info: ResultWrapped<(), String> = from_value(ret_js).unwrap();
-                        //db_info_set.set(db_info.res.unwrap());
-                    });
+                </p>
+                <p class="text-body-secondary current_db_p fs-6">
+                {
+                    move || db_info_get.get().file_path
                 }
-            >
-                "Create New Database"
-            </button>
+                </p>
+                <p></p>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-secondary btn-sm" type="button"
+                        on:click = move |ev| {
+                            spawn_local(async move {
+                                let ret_js: JsValue = super::invoke("open_db", JsValue::NULL).await;
+                                super::js::reload_page();
 
-            <hr></hr>
+                                // TODO handle error
+                                //let db_info: ResultWrapped<(), String> = from_value(ret_js).unwrap();
+                                //db_info_set.set(db_info.res.unwrap());
+                            });
+                        }
+                    >
+                    "Open Existing Database"
+                    </button>
+
+                    <button class="btn btn-secondary btn-sm" type="button"
+                        on:click = move |ev| {
+                            spawn_local(async move {
+                                let ret_js: JsValue = super::invoke("create_db", JsValue::NULL).await;
+                                super::js::reload_page();
+
+                                // TODO handle error
+                                //let db_info: ResultWrapped<(), String> = from_value(ret_js).unwrap();
+                                //db_info_set.set(db_info.res.unwrap());
+                            });
+                        }
+                    >
+                    "Create New Database"
+                    </button>
+                </div>
+            </div>
 
         </div>
     }
