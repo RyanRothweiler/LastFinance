@@ -41,6 +41,7 @@ impl Database {
 
         persist_data.set_last_db(path_str);
 
+        // TODO handle error
         let connection = Connection::open(path_str).unwrap();
 
         let db = Database {

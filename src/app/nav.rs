@@ -52,7 +52,19 @@ pub fn Nav() -> impl IntoView {
             }
             </p>
 
-            <button class="btn btn-outline-secondary btn-sm">Open New Database</button>
+            <button class="btn btn-outline-secondary btn-sm"
+                on:click = move |ev|  {
+                    spawn_local(async move {
+
+                        let ret_js: JsValue = super::invoke("open_db", JsValue::NULL).await;
+                        super::js::reload_page();
+
+                        // TODO handle error
+                    });
+                }
+            >
+                "Open New Database"
+            </button>
             <button class="btn btn-outline-secondary btn-sm"
                 on:click = move |ev| {
                     spawn_local(async move {
@@ -65,7 +77,7 @@ pub fn Nav() -> impl IntoView {
                     });
                 }
             >
-                Create New Database
+                "Create New Database"
             </button>
 
             <hr></hr>

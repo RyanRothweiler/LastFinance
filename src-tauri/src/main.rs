@@ -5,6 +5,7 @@
 mod database;
 mod persistent_data;
 
+use std::path::PathBuf;
 use std::sync::Mutex;
 
 use chrono::prelude::*;
@@ -321,6 +322,26 @@ fn create_db(ts: tauri::State<GuardedState>) -> ResultWrapped<(), String> {
     ResultWrapped::ok(())
 }
 
+#[tauri::command]
+fn open_db(ts: tauri::State<GuardedState>) -> ResultWrapped<(), String> {
+    let mut state = match ts.state.lock() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
+    };
+
+    let mut file_path_buf: PathBuf = match dialog::blocking::FileDialogBuilder::new()
+        .add_filter("DB3", &["db3"])
+        .pick_file()
+    {
+        Some(v) => v,
+        None => return ResultWrapped::error("Error picking file path.".to_string()),
+    };
+
+    state.db = Database::new(file_path_buf, &mut state.persist_data);
+
+    ResultWrapped::ok(())
+}
+
 fn main() {
     // TODO handle error
     let mut persist_data = PersistentData::new_from_file().unwrap();
@@ -329,10 +350,7 @@ fn main() {
         persist_data.last_db_path = "C:/Digital Archive/db.db3".to_string();
     }
 
-    let db = Database::new(
-        std::path::PathBuf::from(&persist_data.last_db_path),
-        &mut persist_data,
-    );
+    let db = Database::new(PathBuf::from(&persist_data.last_db_path), &mut persist_data);
 
     let guarded_state = GuardedState {
         state: Mutex::new(State {
@@ -360,6 +378,7 @@ fn main() {
             import,
             get_db_info,
             create_db,
+            open_db,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
