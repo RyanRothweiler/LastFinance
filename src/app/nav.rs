@@ -57,6 +57,7 @@ pub fn Nav() -> impl IntoView {
                 on:click = move |ev| {
                     spawn_local(async move {
                         let ret_js: JsValue = super::invoke("create_db", JsValue::NULL).await;
+                        super::js::reload_page();
 
                         // TODO handle error
                         //let db_info: ResultWrapped<(), String> = from_value(ret_js).unwrap();

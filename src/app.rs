@@ -34,6 +34,7 @@ mod js {
     extern "C" {
         pub fn show_error() -> JsValue;
         pub fn build_graph(element_id: String, data: Vec<f64>);
+        pub fn reload_page();
     }
 }
 
@@ -52,7 +53,7 @@ pub fn App() -> impl IntoView {
         <main>
 
         <Router>
-            
+
             <body>
             <div class="flex_holder app_container">
                 <nav::Nav/>

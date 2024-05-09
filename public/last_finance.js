@@ -3,6 +3,10 @@ export function show_error() {
 		$('#exampleModal').modal('show');
 }
 
+export function reload_page() {
+		location.reload();
+}
+
 export function build_graph(element_id, dat) {
 
 		var myChart = echarts.init(document.getElementById(element_id));
