@@ -342,6 +342,25 @@ fn open_db(ts: tauri::State<GuardedState>) -> ResultWrapped<(), String> {
     ResultWrapped::ok(())
 }
 
+#[tauri::command]
+fn export_to_csv(ts: tauri::State<GuardedState>) -> ResultWrapped<(), String> {
+    let mut state = match ts.state.lock() {
+        Ok(v) => v,
+        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
+    };
+
+    state
+        .db
+        .export_csv::<Account>(PathBuf::from("C:/Export/"))
+        .unwrap();
+    state
+        .db
+        .export_csv::<Transaction>(PathBuf::from("C:/Export/"))
+        .unwrap();
+
+    ResultWrapped::ok(())
+}
+
 fn main() {
     // TODO handle error
     let mut persist_data = PersistentData::new_from_file().unwrap();
@@ -379,6 +398,7 @@ fn main() {
             get_db_info,
             create_db,
             open_db,
+            export_to_csv,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

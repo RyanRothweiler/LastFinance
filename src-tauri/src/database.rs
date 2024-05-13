@@ -8,7 +8,7 @@ use rusqlite::{Connection, Result};
 use time::format_description::well_known::Iso8601;
 use time::PrimitiveDateTime;
 
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::{prelude::*, BufReader};
 use std::path::{Path, PathBuf};
 
@@ -126,6 +126,47 @@ impl Database {
         }
 
         return Ok(ret);
+    }
+
+    // TODO handle error this whole method here
+    pub fn export_csv<T: TableActions>(&self, mut path: PathBuf) -> Result<(), String> {
+        // Create folders
+        std::fs::create_dir_all(&path).unwrap();
+
+        // Set file name
+        path.push(T::get_table_name());
+        path.set_extension("csv");
+
+        println!("Exporting to {} ", path.to_str().unwrap());
+
+        // Remove past file
+        let _ = std::fs::remove_file(&path);
+
+        // Create append handle
+        let mut file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&path)
+            .unwrap();
+
+        // Write column headers
+        file.write(T::get_csv_headers().as_bytes()).unwrap();
+        file.write("\n".as_bytes()).unwrap();
+
+        let query = format!(
+            "SELECT {} FROM {}",
+            T::get_fetch_schema(),
+            T::get_table_name()
+        );
+
+        let mut stmt = self.connection.prepare(&query).unwrap();
+        let mut iter = stmt.query_map([], |row| Ok(T::row_to_data(row))).unwrap();
+        for c in iter {
+            file.write(c.unwrap().to_csv().as_bytes()).unwrap();
+        }
+
+        println!("Successfully exported");
+        Ok(())
     }
 
     fn table_exists(&self, table: &str) -> bool {

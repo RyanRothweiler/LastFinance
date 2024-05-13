@@ -1,4 +1,4 @@
-use rusqlite::{Row};
+use rusqlite::Row;
 
 use data::account::Account;
 use data::category::*;
@@ -12,6 +12,9 @@ pub trait TableActions {
     fn get_fetch_schema() -> String;
     fn to_insert_data(&self) -> String;
     fn row_to_data(row: &Row) -> Self;
+
+    fn get_csv_headers() -> String;
+    fn to_csv(&self) -> String;
 }
 
 impl TableActions for super::Category {
@@ -43,6 +46,14 @@ impl TableActions for super::Category {
     fn to_insert_data(&self) -> String {
         return format!("'{}', '{}'", self.display_name, self.balance);
     }
+
+    fn get_csv_headers() -> String {
+        todo!();
+    }
+
+    fn to_csv(&self) -> String {
+        todo!();
+    }
 }
 
 impl TableActions for super::Account {
@@ -71,6 +82,14 @@ impl TableActions for super::Account {
 
     fn to_insert_data(&self) -> String {
         return format!("'{}'", self.display_name);
+    }
+
+    fn get_csv_headers() -> String {
+        return "display_name".to_string();
+    }
+
+    fn to_csv(&self) -> String {
+        return format!("{}", self.display_name);
     }
 }
 
@@ -102,6 +121,14 @@ impl TableActions for super::CategoryTransfer {
 
     fn to_insert_data(&self) -> String {
         return format!("'{}', '{}', '{}'", self.source, self.dest, self.amount);
+    }
+
+    fn get_csv_headers() -> String {
+        todo!();
+    }
+
+    fn to_csv(&self) -> String {
+        todo!();
     }
 }
 
@@ -136,6 +163,17 @@ impl TableActions for Transaction {
     fn to_insert_data(&self) -> String {
         return format!(
             "'{}', '{}', '{}', '{}', '{}', '{}'",
+            self.payee, self.amount, self.date, self.notes, self.account_id, self.category_id
+        );
+    }
+
+    fn get_csv_headers() -> String {
+        return "payee, amount, date, notes, account_id, category_id".to_string();
+    }
+
+    fn to_csv(&self) -> String {
+        return format!(
+            "{}, {}, {}, {}, {}, {}",
             self.payee, self.amount, self.date, self.notes, self.account_id, self.category_id
         );
     }

@@ -84,6 +84,16 @@ pub fn Nav() -> impl IntoView {
                     >
                     "Create New Database"
                     </button>
+                    <button class="btn btn-outline-secondary btn-sm" type="button"
+                        on:click = move |ev| {
+                            spawn_local(async move {
+                                let ret_js: JsValue = super::invoke("export_to_csv", JsValue::NULL).await;
+                            });
+                        }
+                    >
+                    "Export Database to CSV"
+                    </button>
+
                 </div>
             </div>
 
