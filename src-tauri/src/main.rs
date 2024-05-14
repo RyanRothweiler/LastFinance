@@ -351,11 +351,7 @@ fn export_to_csv(ts: tauri::State<GuardedState>) -> ResultWrapped<(), String> {
 
     state
         .db
-        .export_csv::<Account>(PathBuf::from("C:/Export/"))
-        .unwrap();
-    state
-        .db
-        .export_csv::<Transaction>(PathBuf::from("C:/Export/"))
+        .export_csv(PathBuf::from("C:/Digital Archive/export.csv"))
         .unwrap();
 
     ResultWrapped::ok(())

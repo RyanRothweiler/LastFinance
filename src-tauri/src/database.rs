@@ -129,14 +129,7 @@ impl Database {
     }
 
     // TODO handle error this whole method here
-    pub fn export_csv<T: TableActions>(&self, mut path: PathBuf) -> Result<(), String> {
-        // Create folders
-        std::fs::create_dir_all(&path).unwrap();
-
-        // Set file name
-        path.push(T::get_table_name());
-        path.set_extension("csv");
-
+    pub fn export_csv(&self, mut path: PathBuf) -> Result<(), String> {
         println!("Exporting to {} ", path.to_str().unwrap());
 
         // Remove past file
@@ -150,20 +143,70 @@ impl Database {
             .unwrap();
 
         // Write column headers
-        file.write(T::get_csv_headers().as_bytes()).unwrap();
+        file.write("payee, amount, date, account, category".as_bytes())
+            .unwrap();
         file.write("\n".as_bytes()).unwrap();
 
-        let query = format!(
-            "SELECT {} FROM {}",
-            T::get_fetch_schema(),
-            T::get_table_name()
-        );
+        struct Row {
+            payee: String,
+            amount: i64,
+            date: i64,
+            account: String,
+            category: String,
+        }
+
+        let query = "
+            select 
+                payee, 
+                amount, 
+                date, 
+                ifnull(accounts.display_name, '') as account_display_name,
+                ifnull(categories.display_name, '') as category_display_name
+            from transactions 
+                left join categories on transactions.category_id = categories.rowid
+                left join accounts on transactions.account_id = accounts.rowid
+            ORDER BY date
+            ";
 
         let mut stmt = self.connection.prepare(&query).unwrap();
-        let mut iter = stmt.query_map([], |row| Ok(T::row_to_data(row))).unwrap();
-        for c in iter {
-            file.write(c.unwrap().to_csv().as_bytes()).unwrap();
-        }
+        let mut iter: Vec<_> = stmt
+            .query_map([], |row| {
+                let r = Row {
+                    payee: row.get(0).unwrap(),
+                    amount: row.get(1).unwrap(),
+                    date: row.get(2).unwrap(),
+                    account: row.get(3).unwrap(),
+                    category: row.get(4).unwrap(),
+                };
+
+                // payee
+                file.write(r.payee.as_bytes()).unwrap();
+                file.write(",".as_bytes()).unwrap();
+
+                // amount
+                file.write(format!("{}", data::cents_to_dollars(r.amount)).as_bytes())
+                    .unwrap();
+                file.write(",".as_bytes()).unwrap();
+
+                // date
+                let date_offset = time::OffsetDateTime::from_unix_timestamp(r.date).unwrap();
+                let format_desc = time::format_description::parse("[year]-[month]-[day]").unwrap();
+                let date_disp: String = date_offset.format(&format_desc).unwrap();
+                file.write(date_disp.as_bytes()).unwrap();
+                file.write(",".as_bytes()).unwrap();
+
+                // account
+                file.write(r.account.as_bytes()).unwrap();
+                file.write(",".as_bytes()).unwrap();
+
+                // category
+                file.write(r.category.as_bytes()).unwrap();
+
+                file.write("\n".as_bytes()).unwrap();
+                Ok(())
+            })
+            .unwrap()
+            .collect();
 
         println!("Successfully exported");
         Ok(())
@@ -194,7 +237,7 @@ impl Database {
 
     pub fn get_transaction_list_display(&self) -> Result<TransactionDisplayList, rusqlite::Error> {
         let query = "
-            SELECT 
+            select 
             payee, 
         amount, 
         date, 
@@ -202,8 +245,8 @@ impl Database {
         ifnull(categories.display_name, '') as category_display_name,
         ifnull(accounts.display_name, '') as account_display_name
             from transactions 
-            left join categories on transactions.category_id = categories.ROWID
-            left join accounts on transactions.account_id = accounts.ROWID
+            left join categories on transactions.category_id = categories.rowid
+            left join accounts on transactions.account_id = accounts.rowid
             ";
 
         let mut stmt = self.connection.prepare(query)?;
@@ -214,7 +257,6 @@ impl Database {
                 account_display: row.get(5).unwrap(),
             })
         })?;
-
         let mut ret = TransactionDisplayList {
             transactions: vec![],
         };
