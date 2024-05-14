@@ -94,3 +94,13 @@ a:link, a:visited, a:hover, a:active {
 .current_db_p {
 		margin-bottom: -2px;
 }
+
+.button_hidden {
+		background: transparent;
+		border: none;
+		color: grey;
+}
+
+.button_hidden:hover {	
+		color: white;
+}

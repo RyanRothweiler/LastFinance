@@ -127,9 +127,8 @@ pub fn Categories() -> impl IntoView {
     let (category_id_selected, category_id_selected_set) = create_signal(0);
 
     view! {
-
-        <div class="btn-group btn-group-sm" role="group" aria-label="Basic outlined example">
-            <button type="button" class="btn btn-outline-primary"
+        <div class="btn-group" role="group">
+            <button type="button" class="button_hidden"
                 on:click = move |ev| {
                     month_selected_set.update(|input: &mut u32| {
                         *input -= 1;
@@ -147,10 +146,25 @@ pub fn Categories() -> impl IntoView {
                     });
                 }
             >
-                "-"
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-caret-left-fill" viewBox="0 0 16 16">
+                  <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>
+                </svg>
             </button>
 
-            <button type="button" class="btn btn-outline-primary"
+        {move || {
+                let date = chrono::Utc.with_ymd_and_hms(year_selected.get(), month_selected.get(), 1, 0, 0, 0).unwrap();
+                let month_disp = date.format("%B").to_string();
+                let year_disp = date.format("%G").to_string();
+
+                let disp = format!(" {} {} ", month_disp, year_disp);
+                view! {
+                    <h1 class="px-3 py-4">{disp}</h1>
+                }
+            }
+        }
+
+
+            <button type="button" class="button_hidden"
                 on:click = move |ev| {
                     month_selected_set.update(|input: &mut u32| {
                         *input += 1;
@@ -168,27 +182,12 @@ pub fn Categories() -> impl IntoView {
                     });
                 }
             >
-                "+"
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
+                  <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
+                </svg>
             </button>
         </div>
 
-
-        {move || {
-                let date = chrono::Utc.with_ymd_and_hms(year_selected.get(), month_selected.get(), 1, 0, 0, 0).unwrap();
-                let month_disp = date.format("%B").to_string();
-                let year_disp = date.format("%G").to_string();
-
-                view! {
-                    <h1>{month_disp}</h1>
-                    <h1>{year_disp}</h1>
-                    <p>{move || month_selected.get()} "/" {move || year_selected.get()}</p>
-                }
-            }
-        }
-
-        <h1>
-            "Categories"
-        </h1>
 
 
             <div class="row">
