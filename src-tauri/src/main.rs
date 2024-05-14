@@ -349,10 +349,13 @@ fn export_to_csv(ts: tauri::State<GuardedState>) -> ResultWrapped<(), String> {
         Err(v) => return ResultWrapped::error("Error locking db".to_string()),
     };
 
-    state
-        .db
-        .export_csv(PathBuf::from("C:/Digital Archive/export.csv"))
-        .unwrap();
+    let mut file_path_buf: PathBuf = match dialog::blocking::FileDialogBuilder::new().save_file() {
+        Some(v) => v,
+        None => return ResultWrapped::error("Error picking file path.".to_string()),
+    };
+
+    file_path_buf.set_extension("csv");
+    state.db.export_csv(file_path_buf).unwrap();
 
     ResultWrapped::ok(())
 }
