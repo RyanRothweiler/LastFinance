@@ -95,12 +95,21 @@ a:link, a:visited, a:hover, a:active {
 		margin-bottom: -2px;
 }
 
-.button_hidden {
+.button_icon_hidden {
 		background: transparent;
 		border: none;
 		color: grey;
 }
 
-.button_hidden:hover {	
+.button_icon_hidden:hover {	
 		color: white;
+}
+
+.button_hidden {
+		background: transparent;
+		border: none;
+}
+
+.icon_h2_collapse {
+		vertical-align: -0.1em;
 }

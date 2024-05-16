@@ -128,7 +128,7 @@ pub fn Categories() -> impl IntoView {
 
     view! {
         <div class="btn-group" role="group">
-            <button type="button" class="button_hidden"
+            <button type="button" class="button_icon_hidden"
                 on:click = move |ev| {
                     month_selected_set.update(|input: &mut u32| {
                         *input -= 1;
@@ -164,7 +164,7 @@ pub fn Categories() -> impl IntoView {
         }
 
 
-            <button type="button" class="button_hidden"
+            <button type="button" class="button_icon_hidden"
                 on:click = move |ev| {
                     month_selected_set.update(|input: &mut u32| {
                         *input += 1;
@@ -273,6 +273,23 @@ pub fn Categories() -> impl IntoView {
                                 <h2>{&cat_info.display_name}</h2>
                                 <p>"Spending Total " {data::amount_to_display(cat_info.transaction_total * -1)}</p>
                                 <p>"Average (per transaction) " {data::amount_to_display((cat_info.transaction_average * -1.0) as i64)}</p>
+
+                                <div class="card card-body d-grid gap-2">
+                                    <button class="btn btn-outline-primary btn-sm"
+                                        on:click = move |_| {
+                                            log!("clear");
+                                        }
+                                    >
+                                        "Rename Category"
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm"
+                                        on:click = move |_| {
+                                            log!("clear");
+                                        }
+                                    >
+                                        "Delete Category"
+                                    </button>
+                                </div>
                             }
                         }
                     }
