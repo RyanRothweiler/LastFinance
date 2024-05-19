@@ -84,21 +84,9 @@ fn create_account(name: &str, sb: i64, ts: tauri::State<GuardedState>) -> Result
 }
 
 #[tauri::command]
-fn create_transaction(
-    trans: Transaction,
-    ts: tauri::State<GuardedState>,
-) -> ResultWrapped<(), String> {
-    let state = match ts.state.lock() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
-    };
-
-    match state.db.insert(trans) {
-        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
-        _ => {}
-    };
-
-    ResultWrapped::ok(())
+fn create_transaction(trans: Transaction, ts: tauri::State<GuardedState>) -> Result<i64, RytError> {
+    let state = ts.state.lock()?;
+    return state.db.insert(trans).map_err(rusqlite_to_ryt);
 }
 
 #[tauri::command]

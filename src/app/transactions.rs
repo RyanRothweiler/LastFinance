@@ -73,7 +73,6 @@ pub fn Transactions() -> impl IntoView {
             let unix_date = date.assume_utc().unix_timestamp();
 
             // create transaction
-            // TODO handle error
             let mut trans = match Transaction::new(
                 create_transaction_payee_nr.get_untracked().unwrap().value(),
                 inflow,
@@ -83,7 +82,7 @@ pub fn Transactions() -> impl IntoView {
             ) {
                 Ok(v) => v,
                 Err(v) => {
-                    //error_modal::show_error(v, &global_state);
+                    error_modal::show_error(v.to_string(), &global_state);
                     return;
                 }
             };
@@ -107,10 +106,7 @@ pub fn Transactions() -> impl IntoView {
                 match res {
                     Ok(v) => trans.category_id = v,
                     Err(v) => {
-                        error_modal::show_error(
-                            "No category with that name.".to_string(),
-                            &global_state,
-                        );
+                        error_modal::show_error(v.to_string(), &global_state);
                         return;
                     }
                 }
@@ -121,12 +117,10 @@ pub fn Transactions() -> impl IntoView {
                 trans: Transaction,
             }
 
-            let args = to_value(&Args { trans: trans }).unwrap();
-
-            let ret_js: JsValue = super::invoke("create_transaction", args).await;
-            let ret: ResultWrapped<(), String> = from_value(ret_js).unwrap();
-            match ret.res {
-                Err(v) => error_modal::show_error(format!("{:?}", v), &global_state),
+            let ret = tauri::invoke("create_transaction", &Args { trans: trans }).await;
+            let res: Result<i64, RytError> = super::convert_invoke(ret);
+            match res {
+                Err(v) => error_modal::show_error(v.to_string(), &global_state),
                 _ => {}
             }
 
