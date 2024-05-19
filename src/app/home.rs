@@ -74,13 +74,9 @@ pub fn Home() -> impl IntoView {
             )
             .await;
             let ret: Result<i64, RytError> = super::convert_invoke(res);
-
-            //let ret_js = super::invoke("create_account", args).await;
-            //let ret: ResultWrapped<(), String> = from_value(ret_js).unwrap();
             match ret {
                 Err(v) => {
-                    // TODO handle error
-                    //super::error_modal::show_error(v, &global_state),
+                    super::error_modal::show_error(v.to_string(), &global_state);
                 }
                 _ => {}
             }

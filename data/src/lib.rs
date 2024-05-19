@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use std::fmt;
+
 use serde::{Deserialize, Serialize};
 
 use num_format::{Locale, ToFormattedString};
@@ -59,6 +61,13 @@ impl RytError {
             },
             _ => RytError::FromBindingRegexError,
         }
+    }
+}
+
+impl fmt::Display for RytError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // TODO actually display the error here
+        write!(f, "{:?}", self)
     }
 }
 

@@ -9,6 +9,7 @@ use serde_wasm_bindgen::{from_value, to_value};
 
 use super::GlobalState;
 
+// TOOD change this to use RytError instead of string
 pub fn show_error(display: String, global_state: &RwSignal<GlobalState>) {
     super::js::show_error();
     log!("Error \n {}", display);
