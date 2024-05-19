@@ -73,6 +73,7 @@ pub fn Transactions() -> impl IntoView {
             let unix_date = date.assume_utc().unix_timestamp();
 
             // create transaction
+            // TODO handle error
             let mut trans = match Transaction::new(
                 create_transaction_payee_nr.get_untracked().unwrap().value(),
                 inflow,
@@ -82,7 +83,7 @@ pub fn Transactions() -> impl IntoView {
             ) {
                 Ok(v) => v,
                 Err(v) => {
-                    error_modal::show_error(v, &global_state);
+                    //error_modal::show_error(v, &global_state);
                     return;
                 }
             };

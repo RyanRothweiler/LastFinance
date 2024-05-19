@@ -62,39 +62,25 @@ fn get_category_id(name: &str, ts: tauri::State<GuardedState>) -> Result<i64, Ry
 
 #[tauri::command]
 // sb -> starting balance
-fn create_account(
-    name: &str,
-    sb: i64,
-    ts: tauri::State<GuardedState>,
-) -> ResultWrapped<(), String> {
-    let state = match ts.state.lock() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
-    };
+fn create_account(name: &str, sb: i64, ts: tauri::State<GuardedState>) -> Result<i64, RytError> {
+    let state = ts.state.lock()?;
 
     let mut account_id: i64;
     let account = Account::new(name);
     match state.db.insert(account) {
-        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
+        Err(v) => return Err(rusqlite_to_ryt(v)),
         Ok(v) => account_id = v,
     };
 
-    let starting_trans = match Transaction::new(
+    let starting_trans = Transaction::new(
         "Starting Balance".to_string(),
         sb,
         0,
         Local::now().timestamp(),
         account_id,
-    ) {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
-    };
-    match state.db.insert(starting_trans) {
-        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
-        _ => {}
-    };
+    )?;
 
-    return ResultWrapped::ok(());
+    return state.db.insert(starting_trans).map_err(rusqlite_to_ryt);
 }
 
 #[tauri::command]

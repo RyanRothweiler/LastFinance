@@ -4,6 +4,7 @@ use leptos::logging::*;
 use leptos::*;
 
 use leptos_chartistry::*;
+use tauri_sys::tauri;
 
 use wasm_bindgen::prelude::*;
 
@@ -13,6 +14,7 @@ use serde_wasm_bindgen::{from_value, to_value};
 use crate::app::error_modal;
 use data::account::*;
 use data::ResultWrapped;
+use data::RytError;
 
 mod account_box;
 
@@ -62,15 +64,24 @@ pub fn Home() -> impl IntoView {
                 }
             };
 
-            let args = to_value(&Args {
-                name: name,
-                sb: data::dollars_to_cents(starting_balance),
-            })
-            .unwrap();
-            let ret_js = super::invoke("create_account", args).await;
-            let ret: ResultWrapped<(), String> = from_value(ret_js).unwrap();
-            match ret.res {
-                Err(v) => super::error_modal::show_error(v, &global_state),
+            // invoke
+            let res = tauri::invoke(
+                "create_account",
+                &Args {
+                    name: name,
+                    sb: data::dollars_to_cents(starting_balance),
+                },
+            )
+            .await;
+            let ret: Result<i64, RytError> = super::convert_invoke(res);
+
+            //let ret_js = super::invoke("create_account", args).await;
+            //let ret: ResultWrapped<(), String> = from_value(ret_js).unwrap();
+            match ret {
+                Err(v) => {
+                    // TODO handle error
+                    //super::error_modal::show_error(v, &global_state),
+                }
                 _ => {}
             }
 

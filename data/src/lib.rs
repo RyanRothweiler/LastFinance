@@ -26,10 +26,13 @@ pub fn amount_to_display(cents: i64) -> String {
 
 // NOTE the handle_invoke in the frontent can't handle params in the enum,
 // so don't add any.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
 pub enum RytError {
     LockingDB,
     Rusqlite,
+
+    CreateTransactionInflowAndOutlow,
+    CreateTransactionNoInflowOrOutflow,
 
     // handle_invoke erorrs
     FromBindingRegexError,

@@ -418,7 +418,7 @@ impl Database {
         Ok(ret)
     }
 
-    pub fn import(&self, file_path: &str, account_id: i64) -> Result<(), String> {
+    pub fn import(&self, file_path: &str, account_id: i64) -> Result<(), RytError> {
         let mut headers = true;
         let file = File::open(file_path).unwrap();
         let reader = BufReader::new(file);

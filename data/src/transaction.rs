@@ -24,12 +24,12 @@ impl Transaction {
         outflow: i64,
         date: i64,
         account_id: i64,
-    ) -> Result<Transaction, String> {
+    ) -> Result<Transaction, crate::RytError> {
         if outflow != 0 && inflow != 0 {
-            return Err("Cannot create transaction with both inflow and outflow.".to_string());
+            return Err(crate::RytError::CreateTransactionInflowAndOutlow);
         }
         if outflow == 0 && inflow == 0 {
-            return Err("Cannot create transaction with no outflow and no inflow.".to_string());
+            return Err(crate::RytError::CreateTransactionNoInflowOrOutflow);
         }
 
         let mount: i64;
@@ -127,7 +127,7 @@ impl TransactionDisplayList {
 fn transaction_new_outflow_and_inflow() {
     assert_eq!(
         Transaction::new("payee".to_string(), 10, 10, 0, 0),
-        Err("Cannot create transaction with both inflow and outflow.".to_string())
+        Err(crate::RytError::CreateTransactionInflowAndOutlow)
     );
 }
 
