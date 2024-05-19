@@ -6,6 +6,7 @@ use leptos::leptos_dom::ev::SubmitEvent;
 use leptos::logging::*;
 use leptos::*;
 
+use tauri_sys::tauri;
 use wasm_bindgen::prelude::*;
 
 use serde::{Deserialize, Serialize};
@@ -15,6 +16,7 @@ use crate::app::error_modal;
 use data::transaction::*;
 use data::OptionWrapped;
 use data::ResultWrapped;
+use data::RytError;
 
 async fn get_transactions_list() -> TransactionDisplayList {
     let ret_js: JsValue = super::invoke("get_all_transactions_display", JsValue::NULL).await;
@@ -88,16 +90,20 @@ pub fn Transactions() -> impl IntoView {
             // get category id from name
             {
                 #[derive(Serialize, Deserialize)]
-                struct CategoryArgs<'a> {
+                struct Args<'a> {
                     name: &'a str,
                 }
-                let args = to_value(&CategoryArgs {
-                    name: &create_transaction_category_nr.get().unwrap().value(),
-                })
-                .unwrap();
-                let ret_js: JsValue = super::invoke("get_category_id", args).await;
-                let ret: ResultWrapped<i64, String> = from_value(ret_js).unwrap();
-                match ret.res {
+
+                let inv_ret = tauri::invoke(
+                    "create_category",
+                    &Args {
+                        name: &create_transaction_category_nr.get().unwrap().value(),
+                    },
+                )
+                .await;
+
+                let res: Result<i64, RytError> = super::convert_invoke(inv_ret);
+                match res {
                     Ok(v) => trans.category_id = v,
                     Err(v) => {
                         error_modal::show_error(

@@ -31,7 +31,8 @@ struct GuardedState {
     state: Mutex<State>,
 }
 
-fn error_conv(_err: rusqlite::Error) -> RytError {
+fn rusqlite_to_ryt(_rusq_error: rusqlite::Error) -> RytError {
+    // TODO more info about error here
     RytError::Rusqlite
 }
 
@@ -46,26 +47,17 @@ fn build_ok() -> String {
 }
 
 #[tauri::command]
-fn create_category(name: &str, ts: tauri::State<GuardedState>) -> Result<(), RytError> {
+fn create_category(name: &str, ts: tauri::State<GuardedState>) -> Result<i64, RytError> {
     let state = ts.state.lock()?;
 
     let cat = Category::new(name);
-    state.db.insert(cat).map_err(|e| RytError::Rusqlite)?;
-
-    Ok(())
+    return state.db.insert(cat).map_err(rusqlite_to_ryt);
 }
 
 #[tauri::command]
-fn get_category_id(name: &str, ts: tauri::State<GuardedState>) -> ResultWrapped<i64, String> {
-    let state = match ts.state.lock() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error("Error locking db.".to_string()),
-    };
-
-    match state.db.get_category_id(name) {
-        Ok(v) => return ResultWrapped::ok(v),
-        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
-    };
+fn get_category_id(name: &str, ts: tauri::State<GuardedState>) -> Result<i64, RytError> {
+    let state = ts.state.lock()?;
+    return state.db.get_category_id(name).map_err(rusqlite_to_ryt);
 }
 
 #[tauri::command]

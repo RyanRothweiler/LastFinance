@@ -115,7 +115,7 @@ pub fn Categories() -> impl IntoView {
             let res = tauri::invoke("create_category", &Args { name: &name }).await;
 
             // TODO handle error
-            let ret: Result<(), RytError> = super::convert_invoke(res);
+            let ret: Result<i64, RytError> = super::convert_invoke(res);
         });
     };
 
