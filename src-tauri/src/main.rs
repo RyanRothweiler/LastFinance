@@ -90,56 +90,6 @@ fn create_transaction(trans: Transaction, ts: tauri::State<GuardedState>) -> Res
 }
 
 #[tauri::command]
-fn get_unassigned(ts: tauri::State<GuardedState>) -> ResultWrapped<f64, String> {
-    return ResultWrapped::ok(100.5);
-}
-
-#[tauri::command]
-fn get_all_categories(ts: tauri::State<GuardedState>) -> ResultWrapped<CategoryList, String> {
-    let state = match ts.state.lock() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
-    };
-
-    let mut list: CategoryList = CategoryList { categories: vec![] };
-    list.categories = match state.db.get_all::<Category>(OrderBy::None) {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
-    };
-
-    ResultWrapped::ok(list)
-}
-
-#[tauri::command]
-fn get_all_accounts(ts: tauri::State<GuardedState>) -> ResultWrapped<Vec<Account>, String> {
-    let state = match ts.state.lock() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
-    };
-
-    let list = match state.db.get_all::<Account>(OrderBy::None) {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
-    };
-    ResultWrapped::ok(list)
-}
-
-#[tauri::command]
-fn get_all_transactions(ts: tauri::State<GuardedState>) -> ResultWrapped<TransactionList, String> {
-    let state = match ts.state.lock() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
-    };
-
-    let mut list: TransactionList = TransactionList::new();
-    list.transactions = match state.db.get_all::<Transaction>(OrderBy::None) {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
-    };
-    ResultWrapped::ok(list)
-}
-
-#[tauri::command]
 fn get_all_transactions_display(
     ts: tauri::State<GuardedState>,
 ) -> ResultWrapped<TransactionDisplayList, String> {
@@ -348,11 +298,7 @@ fn main() {
             create_category,
             create_account,
             create_transaction,
-            get_all_categories,
-            get_all_accounts,
-            get_all_transactions,
             get_all_transactions_display,
-            get_unassigned,
             get_category_id,
             get_category_display_list,
             get_account_display_list,
