@@ -14,6 +14,7 @@ use rusqlite::Result;
 use data::account::*;
 use data::category::*;
 use data::transaction::*;
+use data::RytError;
 use data::{DatabaseInfo, OptionWrapped, ResultWrapped};
 
 use database::{Database, OrderBy};
@@ -30,6 +31,10 @@ struct GuardedState {
     state: Mutex<State>,
 }
 
+fn error_conv(_err: rusqlite::Error) -> RytError {
+    RytError::Rusqlite
+}
+
 fn build_error(err: &str) -> String {
     let ret: Result<(), String> = Result::Err(err.to_string());
     return serde_json::to_string(&ret).unwrap();
@@ -41,19 +46,13 @@ fn build_ok() -> String {
 }
 
 #[tauri::command]
-fn create_category(name: &str, ts: tauri::State<GuardedState>) -> ResultWrapped<(), String> {
-    let state = match ts.state.lock() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error("Error locking database".to_string()),
-    };
+fn create_category(name: &str, ts: tauri::State<GuardedState>) -> Result<(), RytError> {
+    let state = ts.state.lock()?;
 
     let cat = Category::new(name);
-    match state.db.insert(cat) {
-        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
-        _ => {}
-    };
+    state.db.insert(cat).map_err(|e| RytError::Rusqlite)?;
 
-    ResultWrapped::ok(())
+    Ok(())
 }
 
 #[tauri::command]

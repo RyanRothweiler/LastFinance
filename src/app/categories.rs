@@ -3,6 +3,7 @@ use leptos::leptos_dom::ev::SubmitEvent;
 use leptos::logging::*;
 use leptos::*;
 
+use tauri_sys::tauri;
 use wasm_bindgen::prelude::*;
 
 use serde::{Deserialize, Serialize};
@@ -12,6 +13,7 @@ use crate::app::error_modal;
 use data::category::*;
 use data::transaction::*;
 use data::ResultWrapped;
+use data::RytError;
 
 use chrono::prelude::*;
 
@@ -110,17 +112,10 @@ pub fn Categories() -> impl IntoView {
                 name: &'a str,
             }
 
-            let args = to_value(&Args { name: &name }).unwrap();
-            let ret_js: JsValue = super::invoke("create_category", args).await;
-            let ret: ResultWrapped<(), String> = from_value(ret_js).unwrap();
+            let res = tauri::invoke("create_category", &Args { name: &name }).await;
 
-            match ret.res {
-                Err(v) => error_modal::show_error(v, &global_state),
-                _ => {}
-            }
-
-            let cat_list = get_category_list(year_selected.get(), month_selected.get()).await;
-            categories.1.set(cat_list);
+            // TODO handle error
+            let ret: Result<(), RytError> = super::convert_invoke(res);
         });
     };
 

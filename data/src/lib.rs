@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 use num_format::{Locale, ToFormattedString};
+use regex::Regex;
 
 pub mod account;
 pub mod category;
@@ -23,8 +24,44 @@ pub fn amount_to_display(cents: i64) -> String {
     return format!("${}", dollars.to_formatted_string(&Locale::en)).to_string();
 }
 
+// NOTE the handle_invoke in the frontent can't handle params in the enum,
+// so don't add any.
+#[derive(Serialize, Deserialize, Debug)]
+pub enum RytError {
+    LockingDB,
+    Rusqlite,
+
+    // handle_invoke erorrs
+    FromBindingRegexError,
+    BindingDeserializationError,
+    TauriSysError(String),
+}
+
+impl<T> From<std::sync::PoisonError<T>> for RytError {
+    fn from(_error: std::sync::PoisonError<T>) -> Self {
+        RytError::LockingDB
+    }
+}
+
+impl RytError {
+    pub fn from_binding(value: String) -> Self {
+        let re = Regex::new(r#"JsValue\((?P<error>"\w+")\)"#).unwrap();
+        match re.captures(&value) {
+            Some(caps) => match caps["error"].parse::<String>() {
+                Ok(str) => match serde_json::from_str::<RytError>(str.as_str()) {
+                    Ok(error) => error,
+                    _ => RytError::BindingDeserializationError,
+                },
+                _ => unreachable!(),
+            },
+            _ => RytError::FromBindingRegexError,
+        }
+    }
+}
+
+// For some reason
 // Necessary because wasm_bindgen requires serde to serialize between javascript and rust
-// That is my guess atleast wasm_bindget from_value doesn't work on regular results
+// That is my guess atleast, wasm_bindgen from_value doesn't work on regular results
 // so we need to wrap the result.
 // T is ok
 // V is error

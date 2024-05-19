@@ -20,11 +20,13 @@ use data::account::*;
 use data::category::Category;
 use data::category::CategoryList;
 use data::ResultWrapped;
+use data::RytError;
 
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "tauri"])]
     async fn invoke(cmd: &str, args: JsValue) -> JsValue;
+
 }
 
 mod js {
@@ -41,6 +43,19 @@ mod js {
 #[derive(Clone, Debug, Default)]
 struct GlobalState {
     error: String,
+}
+
+// Empty no args for the invokes
+#[derive(Serialize)]
+struct NoArgs {}
+
+// convert a tauri_sys result into a RytError result
+fn convert_invoke<T>(res: Result<T, tauri_sys::Error>) -> Result<T, RytError> {
+    match res {
+        Ok(v) => Ok(v),
+        Err(tauri_sys::Error::Command(string)) => Err(RytError::from_binding(string)),
+        Err(e) => Err(RytError::TauriSysError(e.to_string())),
+    }
 }
 
 #[component]

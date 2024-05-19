@@ -16,6 +16,7 @@ use data::account::*;
 use data::category::*;
 use data::category_transfer::CategoryTransfer;
 use data::transaction::*;
+use data::RytError;
 
 use super::persistent_data::PersistentData;
 
@@ -287,25 +288,6 @@ impl Database {
             .connection
             .query_row(&query, [], |row| Ok(row.get(0)?))?;
         Ok(id)
-    }
-
-    pub fn get_unassigned(&self) -> Result<i64, rusqlite::Error> {
-        todo!();
-        /*
-        let accounts = self.get_all::<Account>(OrderBy::None)?;
-        let mut accounts_total = 0;
-        for a in accounts {
-        accounts_total += a.balance;
-        }
-
-        let categories = self.get_all::<Category>(OrderBy::None)?;
-        let mut categories_total = 0;
-        for c in categories {
-        categories_total += c.balance;
-        }
-
-        return Ok(accounts_total - categories_total);
-        */
     }
 
     pub fn get_account_display_list(&self) -> Result<Vec<AccountDisplay>, rusqlite::Error> {
