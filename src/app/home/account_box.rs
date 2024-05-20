@@ -14,7 +14,6 @@ use serde_wasm_bindgen::{from_value, to_value};
 
 use crate::app::error_modal;
 use data::account::*;
-use data::ResultWrapped;
 use data::RytError;
 
 use crate::app::invoke;

@@ -14,8 +14,7 @@ use rusqlite::Result;
 use data::account::*;
 use data::category::*;
 use data::transaction::*;
-use data::RytError;
-use data::{DatabaseInfo, OptionWrapped, ResultWrapped};
+use data::{DatabaseInfo, RytError};
 
 use database::{Database, OrderBy};
 use persistent_data::PersistentData;
@@ -116,18 +115,9 @@ fn get_category_display_list(
 #[tauri::command]
 fn get_account_display_list(
     ts: tauri::State<GuardedState>,
-) -> ResultWrapped<Vec<AccountDisplay>, String> {
-    let state = match ts.state.lock() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
-    };
-
-    let ret = match state.db.get_account_display_list() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
-    };
-
-    ResultWrapped::ok(ret)
+) -> Result<Vec<AccountDisplay>, RytError> {
+    let state = ts.state.lock()?;
+    return state.db.get_account_display_list().map_err(rusqlite_to_ryt);
 }
 
 #[tauri::command]

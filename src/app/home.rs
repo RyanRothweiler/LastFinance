@@ -13,15 +13,19 @@ use serde_wasm_bindgen::{from_value, to_value};
 
 use crate::app::error_modal;
 use data::account::*;
-use data::ResultWrapped;
 use data::RytError;
 
 mod account_box;
 
 async fn get_account_list() -> Vec<AccountDisplay> {
-    let ret_js: JsValue = super::invoke("get_account_display_list", JsValue::NULL).await;
-    let ret: ResultWrapped<Vec<AccountDisplay>, String> = from_value(ret_js).unwrap();
-    return ret.res.unwrap();
+    let res = tauri::invoke("get_account_display_list", &crate::app::NoArgs {}).await;
+    let ret: Result<Vec<AccountDisplay>, RytError> = super::convert_invoke(res);
+    // TODO handle error
+    return ret.unwrap();
+
+    //let ret_js: JsValue = super::invoke("get_account_display_list", JsValue::NULL).await;
+    //let ret: ResultWrapped<Vec<AccountDisplay>, String> = from_value(ret_js).unwrap();
+    //return ret.res.unwrap();
 }
 
 #[component]

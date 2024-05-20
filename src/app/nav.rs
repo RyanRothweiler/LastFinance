@@ -10,7 +10,7 @@ use tauri_sys::tauri;
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::{from_value, to_value};
 
-use data::{DatabaseInfo, ResultWrapped, RytError};
+use data::{RytError, DatabaseInfo};
 
 #[component]
 pub fn Nav() -> impl IntoView {

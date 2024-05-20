@@ -12,7 +12,6 @@ use serde_wasm_bindgen::{from_value, to_value};
 use crate::app::error_modal;
 use data::category::*;
 use data::transaction::*;
-use data::ResultWrapped;
 use data::RytError;
 
 use chrono::prelude::*;

@@ -15,8 +15,6 @@ use serde_wasm_bindgen::{from_value, to_value};
 
 use crate::app::error_modal;
 use data::transaction::*;
-use data::OptionWrapped;
-use data::ResultWrapped;
 use data::RytError;
 
 async fn get_transactions_list() -> TransactionDisplayList {

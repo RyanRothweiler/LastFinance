@@ -19,7 +19,6 @@ use wasm_bindgen::prelude::*;
 use data::account::*;
 use data::category::Category;
 use data::category::CategoryList;
-use data::ResultWrapped;
 use data::RytError;
 
 #[wasm_bindgen]
