@@ -72,6 +72,8 @@ pub fn Categories() -> impl IntoView {
     let (month_selected, month_selected_set) = create_signal::<u32>(1);
     let (year_selected, year_selected_set) = create_signal::<i32>(2024);
 
+    let (category_id_selected, category_id_selected_set) = create_signal(0);
+
     let categories = create_signal::<Vec<CategoryDisplay>>(vec![]);
     create_resource(
         || (),
@@ -139,10 +141,10 @@ pub fn Categories() -> impl IntoView {
             )
             .await;
             categories.1.set(lst);
+
+            category_id_selected_set.set(0);
         });
     };
-
-    let (category_id_selected, category_id_selected_set) = create_signal(0);
 
     view! {
         <div class="btn-group" role="group">
@@ -285,7 +287,12 @@ pub fn Categories() -> impl IntoView {
                             let cats: Vec<CategoryDisplay> = categories.0.get();
 
                             // Get index from id
-                            let cat_info: &CategoryDisplay = cats.get((category_id_selected.get() - 1) as usize).unwrap();
+                            let mut cat_info: CategoryDisplay = cats.get(0).unwrap().clone();
+                            for c in cats {
+                                if c.category_id == category_id_selected.get() {
+                                    cat_info = c.clone();
+                                }
+                            }
 
                             view! {
                                 <h2>{&cat_info.display_name}</h2>
