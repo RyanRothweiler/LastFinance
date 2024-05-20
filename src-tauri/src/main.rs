@@ -92,18 +92,12 @@ fn create_transaction(trans: Transaction, ts: tauri::State<GuardedState>) -> Res
 #[tauri::command]
 fn get_all_transactions_display(
     ts: tauri::State<GuardedState>,
-) -> ResultWrapped<TransactionDisplayList, String> {
-    let state = match ts.state.lock() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
-    };
-
-    let ret = match state.db.get_transaction_list_display() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
-    };
-
-    ResultWrapped::ok(ret)
+) -> Result<TransactionDisplayList, RytError> {
+    let state = ts.state.lock()?;
+    return state
+        .db
+        .get_transaction_list_display()
+        .map_err(rusqlite_to_ryt);
 }
 
 #[tauri::command]

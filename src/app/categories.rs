@@ -62,9 +62,6 @@ async fn get_category_list(year: i32, month: u32) -> Vec<CategoryDisplay> {
     .await;
     let ret: Result<Vec<CategoryDisplay>, RytError> = super::convert_invoke(res);
 
-    //let ret_js: JsValue = super::invoke("get_category_display_list", args).await;
-    //let ret: ResultWrapped<Vec<CategoryDisplay>, String> = from_value(ret_js).unwrap();
-
     // TODO handle error
     return ret.unwrap();
 }

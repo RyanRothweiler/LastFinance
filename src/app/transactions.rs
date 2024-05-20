@@ -19,9 +19,14 @@ use data::ResultWrapped;
 use data::RytError;
 
 async fn get_transactions_list() -> TransactionDisplayList {
-    let ret_js: JsValue = super::invoke("get_all_transactions_display", JsValue::NULL).await;
-    let ret: ResultWrapped<TransactionDisplayList, String> = from_value(ret_js).unwrap();
-    return ret.res.unwrap();
+    let res = tauri::invoke("get_all_transactions_display", &super::NoArgs {}).await;
+    let ret: Result<TransactionDisplayList, RytError> = super::convert_invoke(res);
+
+    //let ret_js: JsValue = super::invoke("get_all_transactions_display", JsValue::NULL).await;
+    //let ret: ResultWrapped<TransactionDisplayList, String> = from_value(ret_js).unwrap();
+
+    // TODO handle error
+    return ret.unwrap();
 }
 
 #[component]
