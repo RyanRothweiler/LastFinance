@@ -196,21 +196,17 @@ fn open_db(ts: tauri::State<GuardedState>) -> Result<(), RytError> {
 }
 
 #[tauri::command]
-fn export_to_csv(ts: tauri::State<GuardedState>) -> ResultWrapped<(), String> {
-    let mut state = match ts.state.lock() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
-    };
+fn export_to_csv(ts: tauri::State<GuardedState>) -> Result<(), RytError> {
+    let mut state = ts.state.lock()?;
 
-    let mut file_path_buf: PathBuf = match dialog::blocking::FileDialogBuilder::new().save_file() {
-        Some(v) => v,
-        None => return ResultWrapped::error("Error picking file path.".to_string()),
-    };
+    let mut file_path_buf: PathBuf = dialog::blocking::FileDialogBuilder::new()
+        .save_file()
+        .ok_or(RytError::PickFileNone)?;
 
     file_path_buf.set_extension("csv");
     state.db.export_csv(file_path_buf).unwrap();
 
-    ResultWrapped::ok(())
+    Ok(())
 }
 
 fn main() {

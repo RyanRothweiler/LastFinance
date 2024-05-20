@@ -38,6 +38,7 @@ pub fn Nav() -> impl IntoView {
             let ret: Result<(), RytError> = crate::app::convert_invoke(res);
 
             // TODO handle error
+            super::js::reload_page();
         });
     };
 
@@ -47,7 +48,16 @@ pub fn Nav() -> impl IntoView {
             let res = tauri::invoke("open_db", &crate::app::NoArgs {}).await;
             let ret: Result<(), RytError> = crate::app::convert_invoke(res);
 
+            // TODO handle error
             super::js::reload_page();
+        });
+    };
+
+    let export_csv = move |ev: leptos::ev::MouseEvent| {
+        ev.prevent_default();
+        spawn_local(async move {
+            let res = tauri::invoke("export_to_csv", &crate::app::NoArgs {}).await;
+            let ret: Result<(), RytError> = crate::app::convert_invoke(res);
 
             // TODO handle error
         });
@@ -87,22 +97,12 @@ pub fn Nav() -> impl IntoView {
                     </button>
 
                     <button class="btn btn-secondary btn-sm" type="button"
-                        on:click = move |ev| {
-                            spawn_local(async move {
-
-                                let ret_js: JsValue = super::invoke("create_db", JsValue::NULL).await;
-                                super::js::reload_page();
-
-                                // TODO handle error
-                                //let db_info: ResultWrapped<(), String> = from_value(ret_js).unwrap();
-                                //db_info_set.set(db_info.res.unwrap());
-                            });
-                        }
+                        on:click = create_db
                     >
                     "Create New Database"
                     </button>
                     <button class="btn btn-outline-secondary btn-sm" type="button"
-                        on:click = create_db
+                        on:click = export_csv
                     >
                     "Export Database to CSV"
                     </button>
