@@ -5,6 +5,8 @@ use leptos::*;
 
 use leptos_chartistry::*;
 
+use tauri_sys::tauri;
+
 use wasm_bindgen::prelude::*;
 
 use serde::{Deserialize, Serialize};
@@ -13,6 +15,7 @@ use serde_wasm_bindgen::{from_value, to_value};
 use crate::app::error_modal;
 use data::account::*;
 use data::ResultWrapped;
+use data::RytError;
 
 use crate::app::invoke;
 use crate::app::GlobalState;
@@ -26,9 +29,10 @@ async fn get_account_history(account_id: i64) -> Vec<AccountHistoryEntry> {
     }
     let args = to_value(&Args { acid: account_id }).unwrap();
 
-    let ret_js: JsValue = invoke("get_account_history", args).await;
-    let ret: ResultWrapped<Vec<AccountHistoryEntry>, String> = from_value(ret_js).unwrap();
-    return ret.res.unwrap();
+    let res = tauri::invoke("get_account_history", &Args { acid: account_id }).await;
+    let ret: Result<Vec<AccountHistoryEntry>, RytError> = crate::app::convert_invoke(res);
+
+    return ret.unwrap();
 }
 
 #[component]

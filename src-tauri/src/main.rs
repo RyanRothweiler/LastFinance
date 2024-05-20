@@ -134,18 +134,9 @@ fn get_account_display_list(
 fn get_account_history(
     acid: i64,
     ts: tauri::State<GuardedState>,
-) -> ResultWrapped<Vec<AccountHistoryEntry>, String> {
-    let state = match ts.state.lock() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
-    };
-
-    let ret = match state.db.get_account_history(acid) {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
-    };
-
-    ResultWrapped::ok(ret)
+) -> Result<Vec<AccountHistoryEntry>, RytError> {
+    let state = ts.state.lock()?;
+    return state.db.get_account_history(acid).map_err(rusqlite_to_ryt);
 }
 
 #[tauri::command]
