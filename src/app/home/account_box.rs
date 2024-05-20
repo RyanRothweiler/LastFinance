@@ -69,6 +69,30 @@ pub fn AccountBox(account: AccountDisplay) -> impl IntoView {
         },
     );
 
+    let run_import = move || {
+        spawn_local(async move {
+            #[derive(Serialize, Deserialize)]
+            struct Args {
+                acc: i64,
+            }
+
+            let res = tauri::invoke(
+                "import",
+                &Args {
+                    acc: account.account_id,
+                },
+            )
+            .await;
+            let ret: Result<(), RytError> = crate::app::convert_invoke(res);
+            match ret {
+                Err(v) => {
+                    error_modal::show_error(v.to_string(), &global_state);
+                }
+                Ok(()) => {}
+            }
+        });
+    };
+
     let graph_div_id: String = format!("graph_{0}", account.account_id);
 
     view! {
@@ -103,27 +127,7 @@ pub fn AccountBox(account: AccountDisplay) -> impl IntoView {
         </div>
 
          <button class="btn btn-outline-secondary btn-sm" type="submit"
-         on:click = move |ev| {
-             spawn_local(async move {
-                 #[derive(Serialize, Deserialize)]
-                 struct Args {
-                     acc: i64,
-                 }
-                 let args = to_value(&Args {
-                     acc: account.account_id,
-                 })
-                 .unwrap();
-                 let ret_js = invoke("import", args).await;
-                 let ret: ResultWrapped<(), String> = from_value(ret_js).unwrap();
-                 match ret.res {
-                     Err(v) => {
-                         error_modal::show_error(v, &global_state);
-                     }
-                     Ok(()) => {}
-                 }
-
-             });
-         }
+         on:click = move |ev| { run_import(); }
          >
              "Import Transactions CSV"
          </button>

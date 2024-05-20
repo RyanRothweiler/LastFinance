@@ -36,6 +36,9 @@ pub enum RytError {
     CreateTransactionInflowAndOutlow,
     CreateTransactionNoInflowOrOutflow,
 
+    PickFileNone,
+    PathBufToStringFail,
+
     // handle_invoke erorrs
     FromBindingRegexError,
     BindingDeserializationError,

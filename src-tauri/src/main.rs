@@ -140,34 +140,21 @@ fn get_account_history(
 }
 
 #[tauri::command]
-fn import(acc: i64, ts: tauri::State<GuardedState>) -> ResultWrapped<(), String> {
-    let file_path_buf = match dialog::blocking::FileDialogBuilder::new()
+fn import(acc: i64, ts: tauri::State<GuardedState>) -> Result<(), RytError> {
+    // Show dialog
+    let file_path_buf: PathBuf = dialog::blocking::FileDialogBuilder::new()
         .add_filter("CSV", &["csv"])
         .pick_file()
-    {
-        Some(v) => v,
-        None => {
-            return ResultWrapped::error("Error creating file dialog.".to_string());
-        }
-    };
+        .ok_or(RytError::PickFileNone)?;
 
-    let selected_file_path = match file_path_buf.as_path().to_str() {
-        Some(v) => v,
-        None => {
-            return ResultWrapped::error("Invalid file path selected.".to_string());
-        }
-    };
+    // path buf to string
+    let selected_file_path = file_path_buf
+        .as_path()
+        .to_str()
+        .ok_or(RytError::PathBufToStringFail)?;
 
-    let state = match ts.state.lock() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
-    };
-    match state.db.import(selected_file_path, acc) {
-        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
-        _ => {}
-    };
-
-    ResultWrapped::ok(())
+    let state = ts.state.lock()?;
+    return state.db.import(selected_file_path, acc);
 }
 
 #[tauri::command]
