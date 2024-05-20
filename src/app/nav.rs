@@ -31,6 +31,16 @@ pub fn Nav() -> impl IntoView {
         },
     );
 
+    let create_db = move |ev: leptos::ev::MouseEvent| {
+        ev.prevent_default();
+        spawn_local(async move {
+            let res = tauri::invoke("create_db", &crate::app::NoArgs {}).await;
+            let ret: Result<(), RytError> = crate::app::convert_invoke(res);
+
+            // TODO handle error
+        });
+    };
+
     view! {
         <div class="side_nav">
             <h3>"Last Finance"</h3>
@@ -76,6 +86,7 @@ pub fn Nav() -> impl IntoView {
                     <button class="btn btn-secondary btn-sm" type="button"
                         on:click = move |ev| {
                             spawn_local(async move {
+
                                 let ret_js: JsValue = super::invoke("create_db", JsValue::NULL).await;
                                 super::js::reload_page();
 
@@ -88,11 +99,7 @@ pub fn Nav() -> impl IntoView {
                     "Create New Database"
                     </button>
                     <button class="btn btn-outline-secondary btn-sm" type="button"
-                        on:click = move |ev| {
-                            spawn_local(async move {
-                                let ret_js: JsValue = super::invoke("export_to_csv", JsValue::NULL).await;
-                            });
-                        }
+                        on:click = create_db
                     >
                     "Export Database to CSV"
                     </button>

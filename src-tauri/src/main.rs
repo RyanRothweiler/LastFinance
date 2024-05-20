@@ -168,20 +168,17 @@ fn get_db_info(ts: tauri::State<GuardedState>) -> Result<DatabaseInfo, RytError>
 }
 
 #[tauri::command]
-fn create_db(ts: tauri::State<GuardedState>) -> ResultWrapped<(), String> {
-    let mut state = match ts.state.lock() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
-    };
+fn create_db(ts: tauri::State<GuardedState>) -> Result<(), RytError> {
+    let mut state = ts.state.lock()?;
 
-    let mut file_path_buf = match dialog::blocking::FileDialogBuilder::new().save_file() {
-        Some(v) => v,
-        None => return ResultWrapped::error("Error picking file path.".to_string()),
-    };
+    let mut file_path_buf = dialog::blocking::FileDialogBuilder::new()
+        .save_file()
+        .ok_or(RytError::PickFileNone)?;
 
     file_path_buf.set_extension("db3");
     state.db = Database::new(file_path_buf, &mut state.persist_data);
-    ResultWrapped::ok(())
+
+    Ok(())
 }
 
 #[tauri::command]
