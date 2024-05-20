@@ -5,10 +5,12 @@ use leptos::*;
 
 use wasm_bindgen::prelude::*;
 
+use tauri_sys::tauri;
+
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::{from_value, to_value};
 
-use data::{DatabaseInfo, ResultWrapped};
+use data::{DatabaseInfo, ResultWrapped, RytError};
 
 #[component]
 pub fn Nav() -> impl IntoView {
@@ -21,10 +23,11 @@ pub fn Nav() -> impl IntoView {
     create_resource(
         || (),
         move |_| async move {
-            let ret_js: JsValue = super::invoke("get_db_info", JsValue::NULL).await;
-            // TODO error modal here
-            let db_info: ResultWrapped<DatabaseInfo, String> = from_value(ret_js).unwrap();
-            db_info_set.set(db_info.res.unwrap());
+            let res = tauri::invoke("get_db_info", &crate::app::NoArgs {}).await;
+            let ret: Result<DatabaseInfo, RytError> = crate::app::convert_invoke(res);
+
+            // TODO handle error
+            db_info_set.set(ret.unwrap());
         },
     );
 

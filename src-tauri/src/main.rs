@@ -158,29 +158,10 @@ fn import(acc: i64, ts: tauri::State<GuardedState>) -> Result<(), RytError> {
 }
 
 #[tauri::command]
-fn file_dialog() -> OptionWrapped<String> {
-    let file_path_buf = match dialog::blocking::FileDialogBuilder::new()
-        .add_filter("CSV", &["csv"])
-        .pick_file()
-    {
-        Some(v) => v,
-        None => return OptionWrapped::none(),
-    };
+fn get_db_info(ts: tauri::State<GuardedState>) -> Result<DatabaseInfo, RytError> {
+    let state = ts.state.lock()?;
 
-    match file_path_buf.as_path().to_str() {
-        Some(v) => return OptionWrapped::some(v.to_string()),
-        None => return OptionWrapped::none(),
-    };
-}
-
-#[tauri::command]
-fn get_db_info(ts: tauri::State<GuardedState>) -> ResultWrapped<DatabaseInfo, String> {
-    let state = match ts.state.lock() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
-    };
-
-    return ResultWrapped::ok(DatabaseInfo {
+    return Ok(DatabaseInfo {
         file_name: state.db.file_name.clone(),
         file_path: state.db.folder_dir.clone(),
     });
@@ -269,7 +250,6 @@ fn main() {
             get_category_display_list,
             get_account_display_list,
             get_account_history,
-            file_dialog,
             import,
             get_db_info,
             create_db,
