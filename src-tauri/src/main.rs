@@ -54,6 +54,13 @@ fn create_category(name: &str, ts: tauri::State<GuardedState>) -> Result<i64, Ry
 }
 
 #[tauri::command]
+fn delete_category(cid: i64, ts: tauri::State<GuardedState>) -> Result<(), RytError> {
+    let mut state = ts.state.lock()?;
+    state.db.delete::<Category>(cid).map_err(rusqlite_to_ryt)?;
+    Ok(())
+}
+
+#[tauri::command]
 fn get_category_id(name: &str, ts: tauri::State<GuardedState>) -> Result<i64, RytError> {
     let state = ts.state.lock()?;
     return state.db.get_category_id(name).map_err(rusqlite_to_ryt);
@@ -232,6 +239,7 @@ fn main() {
             create_db,
             open_db,
             export_to_csv,
+            delete_category,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

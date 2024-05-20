@@ -56,6 +56,17 @@ fn insert_get() {
 }
 
 #[test]
+fn delete() {
+    let db = test_setup_db(function!());
+    db.insert(Category::new("testing here")).unwrap();
+
+    let count = db.delete::<Category>(1);
+    assert_eq!(count, Ok(1));
+
+    test_remove_db(function!(), db);
+}
+
+#[test]
 fn get_all_categories() {
     let db = test_setup_db(function!());
 

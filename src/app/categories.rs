@@ -124,6 +124,21 @@ pub fn Categories() -> impl IntoView {
         });
     };
 
+    let delete_category = move |cat_id: i64| {
+        spawn_local(async move {
+            log!("deleting category {cat_id}");
+            #[derive(Serialize, Deserialize)]
+            struct Args {
+                cid: i64,
+            }
+
+            let res = tauri::invoke("delete_category", &Args { cid: cat_id }).await;
+
+            // TODO handle error
+            let ret: Result<i64, RytError> = super::convert_invoke(res);
+        });
+    };
+
     let (category_id_selected, category_id_selected_set) = create_signal(0);
 
     view! {
@@ -284,7 +299,7 @@ pub fn Categories() -> impl IntoView {
                                     </button>
                                     <button class="btn btn-outline-danger btn-sm"
                                         on:click = move |_| {
-                                            log!("clear");
+                                            delete_category(category_id_selected.get());
                                         }
                                     >
                                         "Delete Category"

@@ -91,6 +91,11 @@ impl Database {
         Ok(self.connection.last_insert_rowid())
     }
 
+    pub fn delete<T: TableActions>(&self, id: i64) -> Result<usize, rusqlite::Error> {
+        let query = format!("DELETE FROM {} WHERE ROWID = {}", T::get_table_name(), id);
+        return self.connection.execute(&query, ());
+    }
+
     pub fn get<T: TableActions>(&self, id: i64) -> T {
         let query = format!(
             "SELECT {} FROM {} WHERE ROWID={}",
@@ -99,7 +104,7 @@ impl Database {
             id
         );
 
-        // TODO don't unwrap here. Return error.
+        // TODO handle error. Don't unwrap. send error up.
         self.connection
             .query_row(&query, [], |row| Ok(T::row_to_data(row)))
             .unwrap()
