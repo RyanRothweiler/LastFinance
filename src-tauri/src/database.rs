@@ -119,7 +119,7 @@ impl Database {
         );
 
         let mut stmt = self.connection.prepare(&query)?;
-        let mut iter = stmt.query_map([], |row| Ok(T::row_to_data(row)))?;
+        let iter = stmt.query_map([], |row| Ok(T::row_to_data(row)))?;
 
         let mut ret: Vec<T> = vec![];
         for c in iter {

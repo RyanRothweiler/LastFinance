@@ -41,6 +41,18 @@ pub fn Nav() -> impl IntoView {
         });
     };
 
+    let open_db = move |ev: leptos::ev::MouseEvent| {
+        ev.prevent_default();
+        spawn_local(async move {
+            let res = tauri::invoke("open_db", &crate::app::NoArgs {}).await;
+            let ret: Result<(), RytError> = crate::app::convert_invoke(res);
+
+            super::js::reload_page();
+
+            // TODO handle error
+        });
+    };
+
     view! {
         <div class="side_nav">
             <h3>"Last Finance"</h3>
@@ -69,16 +81,7 @@ pub fn Nav() -> impl IntoView {
                 <p></p>
                 <div class="d-grid gap-2">
                     <button class="btn btn-secondary btn-sm" type="button"
-                        on:click = move |ev| {
-                            spawn_local(async move {
-                                let ret_js: JsValue = super::invoke("open_db", JsValue::NULL).await;
-                                super::js::reload_page();
-
-                                // TODO handle error
-                                //let db_info: ResultWrapped<(), String> = from_value(ret_js).unwrap();
-                                //db_info_set.set(db_info.res.unwrap());
-                            });
-                        }
+                        on:click = open_db
                     >
                     "Open Existing Database"
                     </button>
