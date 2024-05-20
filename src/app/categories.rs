@@ -76,17 +76,6 @@ pub fn Categories() -> impl IntoView {
     create_resource(
         || (),
         move |_| async move {
-            let date = chrono::Utc
-                .with_ymd_and_hms(
-                    year_selected.get_untracked(),
-                    month_selected.get_untracked(),
-                    1,
-                    0,
-                    0,
-                    0,
-                )
-                .unwrap();
-
             let lst = get_category_list(
                 year_selected.get_untracked(),
                 month_selected.get_untracked(),
@@ -121,6 +110,13 @@ pub fn Categories() -> impl IntoView {
 
             // TODO handle error
             let ret: Result<i64, RytError> = super::convert_invoke(res);
+
+            let lst = get_category_list(
+                year_selected.get_untracked(),
+                month_selected.get_untracked(),
+            )
+            .await;
+            categories.1.set(lst);
         });
     };
 
@@ -136,6 +132,13 @@ pub fn Categories() -> impl IntoView {
 
             // TODO handle error
             let ret: Result<i64, RytError> = super::convert_invoke(res);
+
+            let lst = get_category_list(
+                year_selected.get_untracked(),
+                month_selected.get_untracked(),
+            )
+            .await;
+            categories.1.set(lst);
         });
     };
 
