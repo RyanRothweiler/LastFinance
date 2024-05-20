@@ -46,18 +46,27 @@ async fn get_category_list(year: i32, month: u32) -> Vec<CategoryDisplay> {
     let start = date_start.timestamp();
     let end = date_end.timestamp();
 
-    //log!("{start} -> {end}");
-
     let args = to_value(&Args {
         start: start,
         end: end,
     })
     .unwrap();
 
-    let ret_js: JsValue = super::invoke("get_category_display_list", args).await;
-    let ret: ResultWrapped<Vec<CategoryDisplay>, String> = from_value(ret_js).unwrap();
+    let res = tauri::invoke(
+        "get_category_display_list",
+        &Args {
+            start: start,
+            end: end,
+        },
+    )
+    .await;
+    let ret: Result<Vec<CategoryDisplay>, RytError> = super::convert_invoke(res);
 
-    return ret.res.unwrap();
+    //let ret_js: JsValue = super::invoke("get_category_display_list", args).await;
+    //let ret: ResultWrapped<Vec<CategoryDisplay>, String> = from_value(ret_js).unwrap();
+
+    // TODO handle error
+    return ret.unwrap();
 }
 
 #[component]

@@ -111,18 +111,12 @@ fn get_category_display_list(
     start: i64,
     end: i64,
     ts: tauri::State<GuardedState>,
-) -> ResultWrapped<Vec<CategoryDisplay>, String> {
-    let state = match ts.state.lock() {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error("Error locking db".to_string()),
-    };
-
-    let ret = match state.db.get_category_display_list(start, end) {
-        Ok(v) => v,
-        Err(v) => return ResultWrapped::error(format!("{:?}", v)),
-    };
-
-    ResultWrapped::ok(ret)
+) -> Result<Vec<CategoryDisplay>, RytError> {
+    let state = ts.state.lock()?;
+    return state
+        .db
+        .get_category_display_list(start, end)
+        .map_err(rusqlite_to_ryt);
 }
 
 #[tauri::command]
