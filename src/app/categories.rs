@@ -70,8 +70,8 @@ async fn get_category_list(year: i32, month: u32) -> Vec<CategoryDisplay> {
 pub fn Categories() -> impl IntoView {
     let global_state = expect_context::<RwSignal<super::GlobalState>>();
 
-    let (month_selected, month_selected_set) = create_signal::<u32>(1);
-    let (year_selected, year_selected_set) = create_signal::<i32>(2024);
+    let (month_selected, month_selected_set) = create_signal::<u32>(Utc::now().month());
+    let (year_selected, year_selected_set) = create_signal::<i32>(Utc::now().year());
 
     let rename_category_input: NodeRef<html::Input> = create_node_ref();
 
