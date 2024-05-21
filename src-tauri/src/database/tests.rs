@@ -23,7 +23,7 @@ fn test_setup_db(name: &str) -> Database {
     let mut path = std::path::PathBuf::from(format!("{db_dir}/"));
     path.push(format!("{name}_db.db3"));
 
-    let db = Database::new(path, &mut PersistentData::new_empty());
+    let db = Database::new(path, &mut PersistentData::new_empty(), false);
     return db;
 }
 
@@ -93,6 +93,22 @@ fn category_exists() {
     test_remove_db(function!(), db);
 }
 
+#[test]
+fn rename_category() {
+    let db = test_setup_db(function!());
+
+    db.insert(Category::new("first")).unwrap();
+    db.insert(Category::new("second")).unwrap();
+
+    db.rename_category(1, "roger".to_string()).unwrap();
+
+    assert_eq!(db.category_exists("first"), Ok(false));
+
+    assert_eq!(db.category_exists("roger"), Ok(true));
+    assert_eq!(db.category_exists("second"), Ok(true));
+
+    test_remove_db(function!(), db);
+}
 #[test]
 fn get_category_id() {
     let db = test_setup_db(function!());

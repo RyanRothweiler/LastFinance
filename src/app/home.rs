@@ -118,7 +118,7 @@ pub fn Home() -> impl IntoView {
           </div>
         </div>
 
-                <div class="modal fade" id="account_create" tabindex="-1" aria-labelledby="account_create" aria-hidden="true">
+        <div class="modal fade" id="account_create" tabindex="-1" aria-labelledby="account_create" aria-hidden="true">
            <div class="modal-dialog modal-dialog-centered">
              <div class="modal-content">
                <div class="modal-header">

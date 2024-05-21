@@ -35,12 +35,13 @@ pub struct Database {
 }
 
 impl Database {
-    // TODO change this to path_buf?
-    pub fn new(file_path: PathBuf, persist_data: &mut PersistentData) -> Database {
+    pub fn new(file_path: PathBuf, persist_data: &mut PersistentData, do_persist: bool) -> Database {
         let path_str: &str = file_path.to_str().unwrap();
         println!("Opening DB {0}", path_str);
 
-        persist_data.set_last_db(path_str);
+        if do_persist {
+            persist_data.set_last_db(path_str);
+        }
 
         // TODO handle error
         let connection = Connection::open(path_str).unwrap();
@@ -421,6 +422,24 @@ impl Database {
         ret.append(&mut new_cats);
 
         Ok(ret)
+    }
+
+    pub fn rename_category(
+        &self,
+        category_id: i64,
+        new_name: String,
+    ) -> Result<(), rusqlite::Error> {
+        let query = format!(
+            "
+                update categories
+                set display_name = '{0}'
+                where ROWID = {1}
+            ",
+            new_name, category_id
+        );
+
+        self.connection.execute(&query, ())?;
+        Ok(())
     }
 
     pub fn import(&self, file_path: &str, account_id: i64) -> Result<(), RytError> {

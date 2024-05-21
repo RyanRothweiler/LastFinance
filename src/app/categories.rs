@@ -1,3 +1,4 @@
+use leptos::ev::MouseEvent;
 use leptos::html::*;
 use leptos::leptos_dom::ev::SubmitEvent;
 use leptos::logging::*;
@@ -72,6 +73,8 @@ pub fn Categories() -> impl IntoView {
     let (month_selected, month_selected_set) = create_signal::<u32>(1);
     let (year_selected, year_selected_set) = create_signal::<i32>(2024);
 
+    let rename_category_input: NodeRef<html::Input> = create_node_ref();
+
     let (category_id_selected, category_id_selected_set) = create_signal(0);
 
     let categories = create_signal::<Vec<CategoryDisplay>>(vec![]);
@@ -143,6 +146,48 @@ pub fn Categories() -> impl IntoView {
             categories.1.set(lst);
 
             category_id_selected_set.set(0);
+        });
+    };
+
+    let rename_category = move |cat_id: i64| {
+        spawn_local(async move {
+            let new_name: &str = &rename_category_input.get().unwrap().value();
+
+            // Don't rename anything if user didn't enter something
+            if new_name.len() == 0 {
+                return;
+            }
+
+            #[derive(Serialize, Deserialize)]
+            struct Args {
+                name: String,
+                cid: i64,
+            }
+
+            // invoke
+            let res = tauri::invoke(
+                "rename_category",
+                &Args {
+                    name: new_name.to_string(),
+                    cid: cat_id,
+                },
+            )
+            .await;
+            let ret: Result<(), RytError> = super::convert_invoke(res);
+            match ret {
+                Err(v) => {
+                    super::error_modal::show_error(v.to_string(), &global_state);
+                    return;
+                }
+                _ => {}
+            }
+
+            let lst = get_category_list(
+                year_selected.get_untracked(),
+                month_selected.get_untracked(),
+            )
+            .await;
+            categories.1.set(lst);
         });
     };
 
@@ -300,13 +345,11 @@ pub fn Categories() -> impl IntoView {
                                 <p>"Average (per transaction) " {data::amount_to_display((cat_info.transaction_average * -1.0) as i64)}</p>
 
                                 <div class="card card-body d-grid gap-2">
-                                    <button class="btn btn-outline-primary btn-sm"
-                                        on:click = move |_| {
-                                            log!("clear");
-                                        }
-                                    >
+
+                                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#rename_category">
                                         "Rename Category"
                                     </button>
+
                                     <button class="btn btn-outline-danger btn-sm"
                                         on:click = move |_| {
                                             delete_category(category_id_selected.get());
@@ -315,6 +358,41 @@ pub fn Categories() -> impl IntoView {
                                         "Delete Category"
                                     </button>
                                 </div>
+
+
+                                 <div class="modal fade" id="rename_category" tabindex="-1" aria-labelledby="rename_category" aria-hidden="true">
+                                   <div class="modal-dialog modal-dialog-centered">
+                                     <div class="modal-content">
+                                       <div class="modal-header">
+                                         <h1 class="modal-title fs-5" id="exampleModalLabel">"Rename Category"</h1>
+                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                       </div>
+
+                                       <div class="modal-body">
+                                         <form>
+
+                                            <div class="mb-3">
+                                                <label for="account_name" class="col-form-label">Category Name</label>
+                                                <input type="text" class="form-control" id="account_name" node_ref=rename_category_input/>
+                                            </div>
+
+                                        </form>
+
+                                       </div>
+
+                                       <div class="modal-footer">
+                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                         <button type="submit" class="btn btn-primary" data-bs-dismiss="modal"
+                                            on:click= move |_| {
+                                                rename_category(category_id_selected.get());
+                                            }>
+                                         "Rename"
+                                         </button>
+                                       </div>
+                                     </div>
+                                   </div>
+                                 </div>
+
                             }
                         }
                     }

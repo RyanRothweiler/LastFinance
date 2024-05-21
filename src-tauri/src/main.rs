@@ -96,6 +96,12 @@ fn create_transaction(trans: Transaction, ts: tauri::State<GuardedState>) -> Res
 }
 
 #[tauri::command]
+fn rename_category(name: String, cid: i64, ts: tauri::State<GuardedState>) -> Result<(), RytError> {
+    let state = ts.state.lock()?;
+    return state.db.rename_category(cid, name).map_err(rusqlite_to_ryt);
+}
+
+#[tauri::command]
 fn get_all_transactions_display(
     ts: tauri::State<GuardedState>,
 ) -> Result<TransactionDisplayList, RytError> {
@@ -173,7 +179,7 @@ fn create_db(ts: tauri::State<GuardedState>) -> Result<(), RytError> {
         .ok_or(RytError::PickFileNone)?;
 
     file_path_buf.set_extension("db3");
-    state.db = Database::new(file_path_buf, &mut state.persist_data);
+    state.db = Database::new(file_path_buf, &mut state.persist_data, true);
 
     Ok(())
 }
@@ -187,7 +193,7 @@ fn open_db(ts: tauri::State<GuardedState>) -> Result<(), RytError> {
         .pick_file()
         .ok_or(RytError::PickFileNone)?;
 
-    state.db = Database::new(file_path_buf, &mut state.persist_data);
+    state.db = Database::new(file_path_buf, &mut state.persist_data, true);
 
     Ok(())
 }
@@ -214,7 +220,11 @@ fn main() {
         persist_data.last_db_path = "C:/Digital Archive/db.db3".to_string();
     }
 
-    let db = Database::new(PathBuf::from(&persist_data.last_db_path), &mut persist_data);
+    let db = Database::new(
+        PathBuf::from(&persist_data.last_db_path),
+        &mut persist_data,
+        true,
+    );
 
     let guarded_state = GuardedState {
         state: Mutex::new(State {
@@ -240,6 +250,7 @@ fn main() {
             open_db,
             export_to_csv,
             delete_category,
+            rename_category,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
