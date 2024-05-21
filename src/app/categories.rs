@@ -77,6 +77,13 @@ pub fn Categories() -> impl IntoView {
 
     let (category_id_selected, category_id_selected_set) = create_signal(0);
 
+    let handle = window_event_listener(ev::keydown, move |ev| {
+        let code = ev.key_code();
+        if code == 27 {
+            category_id_selected_set.set(0);
+        }
+    });
+
     let categories = create_signal::<Vec<CategoryDisplay>>(vec![]);
     create_resource(
         || (),
