@@ -317,14 +317,6 @@ pub fn Categories() -> impl IntoView {
 
                 </form>
 
-
-                <div class="dropdown" data-bs-theme="dark">
-                  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonDark">
-                    <li><a class="dropdown-item active" href="#">Action</a></li>
-                    <li><a class="dropdown-item" href="#">Action</a></li>
-                  </ul>
-                </div>
-
             </div>
             <div class="col-4 bg-secondary-subtle rounded-3 p-3 px-4">
                 <h5 class="text-secondary">"Categories Info"</h5>

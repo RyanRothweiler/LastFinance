@@ -71,6 +71,10 @@ a:link, a:visited, a:hover, a:active {
 		background-color: var(--color-surface-mixed-400);
 }
 
+tr:hover td {
+		background-color: var(--color-surface-mixed-300);
+}
+
 .side_nav_button {
 		padding-left: 10px;
 		padding-top: 5px;
