@@ -225,7 +225,7 @@ pub fn Categories() -> impl IntoView {
 
         {move || {
                 let date = chrono::Utc.with_ymd_and_hms(year_selected.get(), month_selected.get(), 1, 0, 0, 0).unwrap();
-                let month_disp = date.format("%B").to_string();
+                let month_disp = date.format("%b").to_string();
                 let year_disp = date.format("%G").to_string();
 
                 let disp = format!(" {} {} ", month_disp, year_disp);
